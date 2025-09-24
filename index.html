@@ -284,27 +284,38 @@ apply.addEventListener('click', ()=>{
 function renderTable(){
   tbody.innerHTML='';
 
-  const q = norm(searchBox.value); // robusto a spazi/accénti/maiuscole/numeri
+  // 1) Leggo l'input grezzo (senza trim) per intercettare lo spazio iniziale
+  const raw = searchBox.value ?? '';
+  const startsWithSpace = /^\s/.test(raw);       // true se il primo carattere è spazio
+  const q = norm(raw);                           // ricerca "robusta" (trim, no accenti, case-insensitive)
 
-  let rows=rawRows.filter(r=>{
-    const n = norm(r[nameCol]);
-    const a = companyCol ? norm(r[companyCol]) : '';
-    const p = seatCol ? norm(r[seatCol]) : '';
-    return !q || n.includes(q) || a.includes(q) || p.includes(q);
-  });
+  // 2) Se c'è spazio iniziale -> mostra TUTTI i nominativi (nessun filtro)
+  let rows;
+  if (startsWithSpace) {
+    rows = rawRows.slice();                      // copia della lista completa
+  } else {
+    rows = rawRows.filter(r=>{
+      const n = norm(r[nameCol]);
+      const a = companyCol ? norm(r[companyCol]) : '';
+      const p = seatCol ? norm(r[seatCol]) : '';
+      return !q || n.includes(q) || a.includes(q) || p.includes(q);
+    });
+  }
 
-  if(rows.length && (listUnlocked || q)){
+  // 3) Mostra tabella se lista sbloccata, oppure se c'è query, oppure se c'è lo spazio-scorciatoia
+  if (rows.length && (listUnlocked || q || startsWithSpace)) {
     tableCard.classList.remove('hidden');
-  } else if(!listUnlocked){
+  } else if (!listUnlocked) {
     tableCard.classList.add('hidden');
   }
 
+  // 4) Rendering righe
   rows.forEach(r=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${r[nameCol] ?? ''}</td><td>${companyCol?(r[companyCol] ?? ''):''}</td><td>${seatCol?(r[seatCol] ?? ''):''}</td>`;
-    if(checked.get(r[nameCol])){ tr.classList.add('confirmed'); tr.style.pointerEvents='none'; }
+    tr.innerHTML = `<td>${r[nameCol] ?? ''}</td><td>${companyCol?(r[companyCol] ?? ''):''}</td><td>${seatCol?(r[seatCol] ?? ''):''}</td>`;
+    if (checked.get(r[nameCol])) { tr.classList.add('confirmed'); tr.style.pointerEvents='none'; }
     tr.addEventListener('click', ()=>{
-      if(checked.get(r[nameCol])) return;
+      if (checked.get(r[nameCol])) return;
       [...tbody.children].forEach(row=>row.classList.remove('selected'));
       tr.classList.add('selected');
       tr.style.background='#2563eb';
@@ -316,6 +327,7 @@ function renderTable(){
 
   updateCounter();
 }
+
 function updateCounter(){
   let c=[...checked.values()].filter(v=>v).length;
   countChecked.textContent=c; countTotal.textContent=rawRows.length;
