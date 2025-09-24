@@ -3,13 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <title>Accredito Ospiti – Check-in Tool iPad</title>
-  <!-- Modalità web app su iOS -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Check-in Tool">
-<link rel="apple-touch-icon" href="icon.png">
-<link rel="manifest" href="./manifest.json">
- <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     body {
@@ -84,6 +78,14 @@
     .keypad button {font-size:22px; padding:15px; border-radius:8px; background:#374151; color:#fff;}
     .modal button.action {width:48%; font-size:18px;}
     .modal .actions {display:flex; justify-content:space-between;}
+
+    /* uso evento: evita selezioni/copincolla accidentali */
+    html, body {
+      -webkit-touch-callout:none;
+      -webkit-user-select:none;
+      user-select:none;
+      touch-action:manipulation;
+    }
   </style>
 </head>
 <body>
@@ -101,7 +103,17 @@
 
   <!-- Ricerca e contatore -->
   <div class="card hidden" id="toolsCard">
-    <input type="text" id="searchBox" placeholder="Cerca ospite…" autofocus>
+    <input
+      type="text"
+      id="searchBox"
+      placeholder="Cerca ospite…"
+      autofocus
+      autocomplete="off"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      inputmode="search"
+    />
     <div class="counter"><span id="countChecked">0</span> ingressi confermati su <span id="countTotal">0</span></div>
   </div>
 
@@ -147,6 +159,7 @@
   </div>
 
 <script>
+/* -------------------- Stato e riferimenti -------------------- */
 let rawRows=[], headers=[], nameCol=null, companyCol=null, seatCol=null;
 let checked=new Map(), selectedRow=null, selectedData=null, fileKey="accredito_current";
 let pendingAction=null, listUnlocked=false;
@@ -174,7 +187,16 @@ const passwordInput=document.getElementById('passwordInput');
 const modalConfirm=document.getElementById('modalConfirm');
 const modalCancel=document.getElementById('modalCancel');
 
-// ----------- SALVATAGGIO STATO -----------
+/* -------------------- Utility normalizzazione -------------------- */
+// Normalizza stringhe per ricerche e confronti (gestisce numeri, accenti, NBSP)
+const norm = (s) => String(s ?? '')
+  .replace(/\u00A0/g, ' ')               // NBSP -> spazio
+  .normalize('NFKD')                     // separa accenti
+  .replace(/[\u0300-\u036f]/g, '')       // rimuove diacritici
+  .toLowerCase()
+  .trim();
+
+/* -------------------- Salvataggio stato -------------------- */
 function saveState(){
   if(!fileKey) return;
   localStorage.setItem(`accredito:${fileKey}`, JSON.stringify({
@@ -204,7 +226,7 @@ function loadState(){
   return false;
 }
 
-// ----------- FILE UPLOAD -----------
+/* -------------------- Lettura file -------------------- */
 fileInput.addEventListener('change', e=>{
   const file=e.target.files[0]; if(!file) return;
   const reader=new FileReader();
@@ -213,7 +235,11 @@ fileInput.addEventListener('change', e=>{
     const ws=wb.Sheets[wb.SheetNames[0]];
     const json=XLSX.utils.sheet_to_json(ws, {defval:''});
     if(!json.length){alert('Foglio vuoto');return;}
-    rawRows=json; headers=Object.keys(json[0]);
+
+    rawRows=json;
+    headers=Object.keys(json[0]);
+
+    // Popola i select
     [colName,colCompany,colSeat].forEach(sel=>{
       sel.innerHTML='';
       const opt0=document.createElement('option'); opt0.value=''; opt0.textContent='— seleziona colonna —';
@@ -224,15 +250,28 @@ fileInput.addEventListener('change', e=>{
       sel.disabled=false;
     });
     apply.disabled=false;
+
+    // Auto-detect colonne (robusto: normalizza le intestazioni)
+    const HNorm = headers.map(h => norm(h));
+    const pick = (...cands) => {
+      let i = HNorm.findIndex(h => cands.includes(h));              // match esatto normalizzato
+      if (i>=0) return headers[i];
+      i = headers.findIndex(h => cands.some(c => norm(h).includes(c))); // match parziale
+      return i>=0 ? headers[i] : '';
+    };
+    colName.value    = pick('ospiti','ospite','nominativo','nome','name','guest');
+    colCompany.value = pick('azienda','societa','società','company','categoria');
+    colSeat.value    = pick('posto','seat','place','poltrona');
   };
   reader.readAsArrayBuffer(file);
 });
 
-// ----------- APPLICA -----------
+/* -------------------- Applica mappatura -------------------- */
 apply.addEventListener('click', ()=>{
   nameCol=colName.value; companyCol=colCompany.value; seatCol=colSeat.value;
-  if(!nameCol){alert('Seleziona almeno la colonna Nome');return;}
+  if(!nameCol){alert('Seleziona almeno la colonna Nome/Ospite');return;}
   checked.clear();
+  // Chiave di conferma = nome (manteniamo comportamento precedente)
   rawRows.forEach(r=>checked.set(r[nameCol], false));
   saveState();
   document.getElementById('uploadCard').classList.add('hidden');
@@ -241,23 +280,28 @@ apply.addEventListener('click', ()=>{
   renderTable();
 });
 
-// ----------- TABELLA -----------
+/* -------------------- Render tabella & ricerca -------------------- */
 function renderTable(){
   tbody.innerHTML='';
-  let q=searchBox.value.toLowerCase();
+
+  const q = norm(searchBox.value); // robusto a spazi/accénti/maiuscole/numeri
+
   let rows=rawRows.filter(r=>{
-    return !q || (r[nameCol]??'').toLowerCase().includes(q) ||
-           (companyCol && (r[companyCol]??'').toLowerCase().includes(q)) ||
-           (seatCol && (r[seatCol]??'').toLowerCase().includes(q));
+    const n = norm(r[nameCol]);
+    const a = companyCol ? norm(r[companyCol]) : '';
+    const p = seatCol ? norm(r[seatCol]) : '';
+    return !q || n.includes(q) || a.includes(q) || p.includes(q);
   });
+
   if(rows.length && (listUnlocked || q)){
     tableCard.classList.remove('hidden');
   } else if(!listUnlocked){
     tableCard.classList.add('hidden');
   }
+
   rows.forEach(r=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${r[nameCol]}</td><td>${companyCol?r[companyCol]:''}</td><td>${seatCol?r[seatCol]:''}</td>`;
+    tr.innerHTML=`<td>${r[nameCol] ?? ''}</td><td>${companyCol?(r[companyCol] ?? ''):''}</td><td>${seatCol?(r[seatCol] ?? ''):''}</td>`;
     if(checked.get(r[nameCol])){ tr.classList.add('confirmed'); tr.style.pointerEvents='none'; }
     tr.addEventListener('click', ()=>{
       if(checked.get(r[nameCol])) return;
@@ -269,15 +313,19 @@ function renderTable(){
     });
     tbody.appendChild(tr);
   });
+
   updateCounter();
 }
 function updateCounter(){
   let c=[...checked.values()].filter(v=>v).length;
   countChecked.textContent=c; countTotal.textContent=rawRows.length;
 }
-searchBox.addEventListener('input', renderTable);
+// Eventi input più robusti su iOS
+['input','keyup','change','compositionend'].forEach(ev => {
+  searchBox.addEventListener(ev, renderTable);
+});
 
-// ----------- CONFERMA OSPITE -----------
+/* -------------------- Conferma ospite -------------------- */
 confirmBtn.addEventListener('click', ()=>{
   if(!selectedData) return;
   checked.set(selectedData[nameCol], new Date().toLocaleString());
@@ -294,7 +342,7 @@ confirmBtn.addEventListener('click', ()=>{
   renderTable();
 });
 
-// ----------- MODAL PASSWORD -----------
+/* -------------------- Modal password -------------------- */
 function openModal(action){
   pendingAction=action;
   passwordInput.value='';
@@ -313,6 +361,7 @@ modalConfirm.addEventListener('click', ()=>{
   if(passwordInput.value==="2006"){
     closeModal();
     if(pendingAction==="report"){
+      // Esporta sempre tutte le righe + colonna CheckIn
       let rows=rawRows.map(r=>({...r, CheckIn:checked.get(r[nameCol])||''}));
       const ws=XLSX.utils.json_to_sheet(rows); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Report');
       XLSX.writeFile(wb, 'report_completo.xlsx');
@@ -333,10 +382,8 @@ reportBtn.addEventListener('click', ()=>openModal("report"));
 resetBtn.addEventListener('click', ()=>openModal("reset"));
 showListBtn.addEventListener('click', ()=>openModal("showlist"));
 
-// ----------- RIPRISTINA STATO ALL'AVVIO -----------
-window.addEventListener('DOMContentLoaded', ()=>{
-  loadState();
-});
+/* -------------------- Ripristino stato all'avvio -------------------- */
+window.addEventListener('DOMContentLoaded', loadState);
 </script>
 </body>
 </html>
