@@ -35,7 +35,7 @@
     .counter {margin-top:10px; font-size:20px; text-align:center;}
     .hidden {display:none;}
 
-    /* popup conferma ospite spostato in alto e 3D */
+    /* popup conferma ospite */
     .popupConfirm {
       position:fixed; top:15%; left:50%; transform:translateX(-50%);
       background:#16a34a; color:#fff; padding:30px 40px;
@@ -49,9 +49,9 @@
       to {transform:translateX(-50%) scale(1); opacity:1;}
     }
 
-    /* area pulsanti in basso con 5 cm di spazio */
+    /* area pulsanti in basso */
     .actionsBottom {
-      margin-top:200px; /* circa 5 cm */
+      margin-top:200px;
       text-align:center;
     }
     .actionsBottom button {min-width:140px; margin:8px; font-size:16px; color:#fff;}
@@ -112,7 +112,7 @@
     <button id="confirmBtn" class="ok" style="width:100%;">CONFERMA</button>
   </div>
 
-  <!-- Pulsanti protetti in basso -->
+  <!-- Pulsanti protetti -->
   <div class="actionsBottom hidden" id="exportCard">
     <button id="showListBtn">Mostra/Nascondi Ospiti 🔒</button>
     <button id="reportBtn">Report 🔒</button>
@@ -142,7 +142,7 @@
 
 <script>
 let rawRows=[], headers=[], nameCol=null, companyCol=null, seatCol=null;
-let checked=new Map(), selectedRow=null, selectedData=null, fileKey=null;
+let checked=new Map(), selectedRow=null, selectedData=null, fileKey="accredito_current";
 let pendingAction=null, listUnlocked=false;
 
 const fileInput=document.getElementById('fileInput');
@@ -168,6 +168,7 @@ const passwordInput=document.getElementById('passwordInput');
 const modalConfirm=document.getElementById('modalConfirm');
 const modalCancel=document.getElementById('modalCancel');
 
+// ----------- SALVATAGGIO STATO -----------
 function saveState(){
   if(!fileKey) return;
   localStorage.setItem(`accredito:${fileKey}`, JSON.stringify({
@@ -176,10 +177,30 @@ function saveState(){
     rawRows
   }));
 }
+function loadState(){
+  const saved=localStorage.getItem(`accredito:${fileKey}`);
+  if(!saved) return false;
+  try{
+    const data=JSON.parse(saved);
+    rawRows=data.rawRows||[];
+    nameCol=data.cols.nameCol;
+    companyCol=data.cols.companyCol;
+    seatCol=data.cols.seatCol;
+    checked=new Map(Object.entries(data.checked||{}));
+    if(rawRows.length){
+      document.getElementById('uploadCard').classList.add('hidden');
+      toolsCard.classList.remove('hidden');
+      exportCard.classList.remove('hidden');
+      renderTable();
+      return true;
+    }
+  }catch(e){console.error(e);}
+  return false;
+}
 
+// ----------- FILE UPLOAD -----------
 fileInput.addEventListener('change', e=>{
   const file=e.target.files[0]; if(!file) return;
-  fileKey = "accredito_current";
   const reader=new FileReader();
   reader.onload=evt=>{
     const wb=XLSX.read(new Uint8Array(evt.target.result), {type:'array'});
@@ -201,6 +222,7 @@ fileInput.addEventListener('change', e=>{
   reader.readAsArrayBuffer(file);
 });
 
+// ----------- APPLICA -----------
 apply.addEventListener('click', ()=>{
   nameCol=colName.value; companyCol=colCompany.value; seatCol=colSeat.value;
   if(!nameCol){alert('Seleziona almeno la colonna Nome');return;}
@@ -213,6 +235,7 @@ apply.addEventListener('click', ()=>{
   renderTable();
 });
 
+// ----------- TABELLA -----------
 function renderTable(){
   tbody.innerHTML='';
   let q=searchBox.value.toLowerCase();
@@ -248,6 +271,7 @@ function updateCounter(){
 }
 searchBox.addEventListener('input', renderTable);
 
+// ----------- CONFERMA OSPITE -----------
 confirmBtn.addEventListener('click', ()=>{
   if(!selectedData) return;
   checked.set(selectedData[nameCol], new Date().toLocaleString());
@@ -264,7 +288,7 @@ confirmBtn.addEventListener('click', ()=>{
   renderTable();
 });
 
-// Modal password
+// ----------- MODAL PASSWORD -----------
 function openModal(action){
   pendingAction=action;
   passwordInput.value='';
@@ -302,6 +326,11 @@ modalCancel.addEventListener('click', closeModal);
 reportBtn.addEventListener('click', ()=>openModal("report"));
 resetBtn.addEventListener('click', ()=>openModal("reset"));
 showListBtn.addEventListener('click', ()=>openModal("showlist"));
+
+// ----------- RIPRISTINA STATO ALL'AVVIO -----------
+window.addEventListener('DOMContentLoaded', ()=>{
+  loadState();
+});
 </script>
 </body>
 </html>
