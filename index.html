@@ -179,7 +179,7 @@ function saveState(){
 
 fileInput.addEventListener('change', e=>{
   const file=e.target.files[0]; if(!file) return;
-  fileKey=file.name+"::"+Date.now();
+  fileKey = "accredito_current";
   const reader=new FileReader();
   reader.onload=evt=>{
     const wb=XLSX.read(new Uint8Array(evt.target.result), {type:'array'});
