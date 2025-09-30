@@ -1,106 +1,65 @@
 <!doctype html>
 <html lang="it">
 <head>
-  <!-- iOS web-app (kiosk) -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Accredito Ospiti">
-<link rel="apple-touch-icon" href="icon-180.png">
-
-<!-- Manifest PWA (usa percorso relativo su GitHub Pages) -->
-<link rel="manifest" href="./manifest.json?v=2">
-
   <meta charset="utf-8" />
   <title>Accredito Ospiti – Check-in Tool iPad</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <!-- iOS: avvia come web app a schermo pieno -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Check-in Tool">
+<link rel="apple-touch-icon" href="icon.png">
+
+<!-- Android/Chromium: PWA standalone -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#1f2937">
+
+<!-- Viewport “bloccato” (già presente) -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background:#2b384b; color:#fff; margin:0; padding:15px;
-    }
-    h1 {text-align:center; font-size:22px; margin-bottom:20px;}
-    .card {background:#1f2937; border-radius:10px; padding:15px; margin-bottom:15px;}
-    input[type="file"], select {
-      padding:12px; border-radius:8px; border:none; width:100%; margin:6px 0; font-size:18px;
-    }
-    #searchBox {
-      padding:12px; border-radius:8px; border:none;
-      width:70%; margin:6px auto; display:block; font-size:18px;
-    }
-    table {width:100%; border-collapse:collapse; margin-top:10px; font-size:18px;}
-    th, td {padding:14px; border-bottom:1px solid #444;}
-    th {background:#374151; text-align:left;}
-    tr {cursor:pointer;}
-    tr:hover {background:#4b5563;}
-    tr.confirmed {background:#065f46 !important; color:#fff;}
-    button {
-      padding:12px 14px; border:none; border-radius:8px; cursor:pointer;
-      margin:6px; font-size:16px;
-    }
-    button.primary {background:#e52013; color:#fff;}
-    button.ok {background:#16a34a; color:#fff;}
-    button.warn {background:#b45309; color:#fff;}
-    .counter {margin-top:10px; font-size:20px; text-align:center;}
-    .hidden {display:none;}
-
-    /* popup conferma ospite */
-    .popupConfirm {
-      position:fixed; top:15%; left:50%; transform:translateX(-50%);
-      background:#16a34a; color:#fff; padding:30px 40px;
-      border-radius:12px; font-size:26px; font-weight:bold;
-      display:none; z-index:99999; text-align:center;
-      box-shadow:0 6px 20px rgba(0,0,0,0.6);
-      animation: pop 0.3s ease-out;
-    }
-    @keyframes pop {
-      from {transform:translateX(-50%) scale(0.9); opacity:0;}
-      to {transform:translateX(-50%) scale(1); opacity:1;}
-    }
-
-    /* area pulsanti in basso */
-    .actionsBottom {
-      margin-top:200px;
-      text-align:center;
-    }
-    .actionsBottom button {min-width:140px; margin:8px; font-size:16px; color:#fff;}
-    #showListBtn {background:#2563eb;}   /* blu */
-    #reportBtn   {background:#d97706;}   /* arancione */
-    #resetBtn    {background:#dc2626;}   /* rosso */
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#2b384b;color:#fff;margin:0;padding:15px}
+    h1{text-align:center;font-size:22px;margin-bottom:20px}
+    .card{background:#1f2937;border-radius:10px;padding:15px;margin-bottom:15px}
+    input[type="file"], select{padding:12px;border-radius:8px;border:none;width:100%;margin:6px 0;font-size:18px}
+    #searchBox{padding:12px;border-radius:8px;border:none;width:70%;margin:6px auto;display:block;font-size:18px}
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:18px}
+    th,td{padding:14px;border-bottom:1px solid #444}
+    th{background:#374151;text-align:left}
+    tr{cursor:pointer}
+    tr:hover{background:#4b5563}
+    tr.confirmed{background:#065f46!important;color:#fff}
+    /* ➕ Evidenziazione riga selezionata */
+    tr.selected{background:#2563eb!important;color:#fff}
+    button{padding:12px 14px;border:none;border-radius:8px;cursor:pointer;margin:6px;font-size:16px}
+    button.primary{background:#e52013;color:#fff}
+    button.ok{background:#16a34a;color:#fff}
+    .counter{margin-top:10px;font-size:20px;text-align:center}
+    .hidden{display:none}
+    .popupConfirm{position:fixed;top:15%;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:30px 40px;border-radius:12px;font-size:26px;font-weight:bold;display:none;z-index:99999;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.6);animation:pop .3s ease-out}
+    @keyframes pop{from{transform:translateX(-50%) scale(.9);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+    .actionsBottom{text-align:center;margin-top:30px}
+    .actionsBottom button{min-width:140px;margin:8px;font-size:16px;color:#fff}
+    #showListBtn{background:#2563eb}
+    #reportBtn{background:#d97706}
+    #resetBtn{background:#dc2626}
 
     /* Modal password */
-    .modal {
-      position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center;
-      z-index:10000; visibility:hidden; opacity:0; transition:opacity .3s;
-    }
-    .modal.show {visibility:visible; opacity:1;}
-    .modal-content {
-      background:#1f2937; padding:20px; border-radius:12px; text-align:center; width:300px;
-    }
-    .modal h2 {margin:0 0 15px; font-size:20px;}
-    .modal input {
-      width:100%; font-size:22px; padding:12px; border-radius:8px; border:none; text-align:center;
-      margin-bottom:15px; background:#fff; color:#000;
-    }
-    .keypad {display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:15px;}
-    .keypad button {font-size:22px; padding:15px; border-radius:8px; background:#374151; color:#fff;}
-    .modal button.action {width:48%; font-size:18px;}
-    .modal .actions {display:flex; justify-content:space-between;}
-
-    /* uso evento: evita selezioni/copincolla accidentali */
-    html, body {
-      -webkit-touch-callout:none;
-      -webkit-user-select:none;
-      user-select:none;
-      touch-action:manipulation;
-    }
+    .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;visibility:hidden;opacity:0;transition:opacity .3s;}
+    .modal.show{visibility:visible;opacity:1;}
+    .modal-content{background:#1f2937;padding:20px;border-radius:12px;text-align:center;width:300px;}
+    .modal h2{margin:0 0 15px;font-size:20px}
+    .modal input{width:100%;font-size:22px;padding:12px;border-radius:8px;border:none;text-align:center;margin-bottom:15px;background:#fff;color:#000;}
+    .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:15px}
+    .keypad button{font-size:22px;padding:15px;border-radius:8px;background:#374151;color:#fff}
+    .modal .actions{display:flex;justify-content:space-between}
+    .modal button.action{width:48%;font-size:18px}
   </style>
 </head>
 <body>
   <h1>TAGLIO NASTRO – Accredito Ospiti</h1>
 
-  <!-- Caricamento file -->
   <div class="card" id="uploadCard">
     <h3>1) Carica lista ospiti (Excel/CSV)</h3>
     <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
@@ -110,23 +69,11 @@
     <button id="apply" class="primary" disabled>Carica elenco</button>
   </div>
 
-  <!-- Ricerca e contatore -->
   <div class="card hidden" id="toolsCard">
-    <input
-      type="text"
-      id="searchBox"
-      placeholder="Cerca ospite…"
-      autofocus
-      autocomplete="off"
-      autocapitalize="off"
-      autocorrect="off"
-      spellcheck="false"
-      inputmode="search"
-    />
+    <input type="text" id="searchBox" placeholder="Cerca ospite… (spazio = mostra tutti)" autofocus>
     <div class="counter"><span id="countChecked">0</span> ingressi confermati su <span id="countTotal">0</span></div>
   </div>
 
-  <!-- Tabella -->
   <div class="card hidden" id="tableCard">
     <table id="dataTable">
       <thead><tr><th>Ospite</th><th>Azienda</th><th>Posto</th></tr></thead>
@@ -134,20 +81,17 @@
     </table>
   </div>
 
-  <!-- Conferma -->
   <div class="card hidden" id="confirmCard">
     <button id="confirmBtn" class="ok" style="width:100%;">CONFERMA</button>
   </div>
 
-  <!-- Pulsanti protetti -->
   <div class="actionsBottom hidden" id="exportCard">
-    <button id="showListBtn">Mostra/Nascondi Ospiti 🔒</button>
-    <button id="reportBtn">Report 🔒</button>
+    <button id="showListBtn">Mostra/Nascondi Ospiti</button>
+    <button id="reportBtn">Scarica Report</button>
     <button id="resetBtn">Reset 🔒</button>
   </div>
 
-  <!-- Popup conferma -->
-  <div id="popupConfirm" class="popupConfirm">Ospite Accreditato</div>
+  <div class="popupConfirm" id="popupConfirm">Ospite Accreditato</div>
 
   <!-- Modal password -->
   <div id="passwordModal" class="modal">
@@ -168,10 +112,14 @@
   </div>
 
 <script>
-/* -------------------- Stato e riferimenti -------------------- */
+/* ===== CONFIG GOOGLE SHEET ===== */
+const sheetWebhookURL = "https://script.google.com/macros/s/AKfycbxI70JC0FOpsOmcUcTl2HP-V8ZZjJKOs8LAAaiwn9Dk3DwuvMLwy8BYgK8Z0NnMGZl3/exec";
+
+/* ===== VARIABILI ===== */
 let rawRows=[], headers=[], nameCol=null, companyCol=null, seatCol=null;
-let checked=new Map(), selectedRow=null, selectedData=null, fileKey="accredito_current";
-let pendingAction=null, listUnlocked=false;
+let checked=new Map(), selectedRow=null, selectedData=null;
+const fileKey="accredito_current";
+let listVisible=false; // stato del toggle Mostra/Nascondi
 
 const fileInput=document.getElementById('fileInput');
 const colName=document.getElementById('colName');
@@ -184,227 +132,199 @@ const toolsCard=document.getElementById('toolsCard');
 const tableCard=document.getElementById('tableCard');
 const confirmCard=document.getElementById('confirmCard');
 const confirmBtn=document.getElementById('confirmBtn');
-const exportCard=document.getElementById('exportCard');
 const countChecked=document.getElementById('countChecked');
 const countTotal=document.getElementById('countTotal');
 const popupConfirm=document.getElementById('popupConfirm');
+const exportCard=document.getElementById('exportCard');
+const showListBtn=document.getElementById('showListBtn');
 const reportBtn=document.getElementById('reportBtn');
 const resetBtn=document.getElementById('resetBtn');
-const showListBtn=document.getElementById('showListBtn');
 const modal=document.getElementById('passwordModal');
 const passwordInput=document.getElementById('passwordInput');
 const modalConfirm=document.getElementById('modalConfirm');
 const modalCancel=document.getElementById('modalCancel');
 
-/* -------------------- Utility normalizzazione -------------------- */
-// Normalizza stringhe per ricerche e confronti (gestisce numeri, accenti, NBSP)
-const norm = (s) => String(s ?? '')
-  .replace(/\u00A0/g, ' ')               // NBSP -> spazio
-  .normalize('NFKD')                     // separa accenti
-  .replace(/[\u0300-\u036f]/g, '')       // rimuove diacritici
-  .toLowerCase()
-  .trim();
-
-/* -------------------- Salvataggio stato -------------------- */
-function saveState(){
-  if(!fileKey) return;
-  localStorage.setItem(`accredito:${fileKey}`, JSON.stringify({
-    checked:Object.fromEntries(checked),
-    cols:{nameCol, companyCol, seatCol},
-    rawRows
-  }));
-}
-function loadState(){
-  const saved=localStorage.getItem(`accredito:${fileKey}`);
-  if(!saved) return false;
+/* ===== INVIO A GOOGLE SHEET ===== */
+async function inviaASheet(dati){
   try{
-    const data=JSON.parse(saved);
-    rawRows=data.rawRows||[];
-    nameCol=data.cols.nameCol;
-    companyCol=data.cols.companyCol;
-    seatCol=data.cols.seatCol;
-    checked=new Map(Object.entries(data.checked||{}));
-    if(rawRows.length){
-      document.getElementById('uploadCard').classList.add('hidden');
-      toolsCard.classList.remove('hidden');
-      exportCard.classList.remove('hidden');
-      renderTable();
-      return true;
-    }
-  }catch(e){console.error(e);}
-  return false;
+    await fetch(sheetWebhookURL,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({
+        nome:String(dati[nameCol]||""),
+        azienda:companyCol?String(dati[companyCol]||""):"",
+        posto:seatCol?String(dati[seatCol]||""):""
+      })
+    });
+  }catch(err){console.error("Errore rete:",err);}
 }
 
-/* -------------------- Lettura file -------------------- */
+/* ===== FILE UPLOAD ===== */
 fileInput.addEventListener('change', e=>{
   const file=e.target.files[0]; if(!file) return;
   const reader=new FileReader();
   reader.onload=evt=>{
-    const wb=XLSX.read(new Uint8Array(evt.target.result), {type:'array'});
+    const wb=XLSX.read(new Uint8Array(evt.target.result),{type:'array'});
     const ws=wb.Sheets[wb.SheetNames[0]];
-    const json=XLSX.utils.sheet_to_json(ws, {defval:''});
+    const json=XLSX.utils.sheet_to_json(ws,{defval:''});
     if(!json.length){alert('Foglio vuoto');return;}
-
-    rawRows=json;
-    headers=Object.keys(json[0]);
-
-    // Popola i select
+    rawRows=json; headers=Object.keys(json[0]);
     [colName,colCompany,colSeat].forEach(sel=>{
       sel.innerHTML='';
-      const opt0=document.createElement('option'); opt0.value=''; opt0.textContent='— seleziona colonna —';
+      const opt0=document.createElement('option');opt0.value='';opt0.textContent='— seleziona colonna —';
       sel.appendChild(opt0);
       headers.forEach(h=>{
-        const opt=document.createElement('option'); opt.value=h; opt.textContent=h; sel.appendChild(opt);
+        const opt=document.createElement('option');opt.value=h;opt.textContent=h;sel.appendChild(opt);
       });
       sel.disabled=false;
     });
     apply.disabled=false;
-
-    // Auto-detect colonne (robusto: normalizza le intestazioni)
-    const HNorm = headers.map(h => norm(h));
-    const pick = (...cands) => {
-      let i = HNorm.findIndex(h => cands.includes(h));              // match esatto normalizzato
-      if (i>=0) return headers[i];
-      i = headers.findIndex(h => cands.some(c => norm(h).includes(c))); // match parziale
-      return i>=0 ? headers[i] : '';
-    };
-    colName.value    = pick('ospiti','ospite','nominativo','nome','name','guest');
-    colCompany.value = pick('azienda','societa','società','company','categoria');
-    colSeat.value    = pick('posto','seat','place','poltrona');
   };
   reader.readAsArrayBuffer(file);
 });
 
-/* -------------------- Applica mappatura -------------------- */
+/* ===== APPLICA ===== */
 apply.addEventListener('click', ()=>{
   nameCol=colName.value; companyCol=colCompany.value; seatCol=colSeat.value;
-  if(!nameCol){alert('Seleziona almeno la colonna Nome/Ospite');return;}
+  if(!nameCol){alert('Seleziona almeno la colonna Nome');return;}
   checked.clear();
-  // Chiave di conferma = nome (manteniamo comportamento precedente)
-  rawRows.forEach(r=>checked.set(r[nameCol], false));
-  saveState();
+  rawRows.forEach(r=>checked.set(r[nameCol],false));
+  localStorage.setItem(`accredito:${fileKey}`, JSON.stringify({
+    checked:Object.fromEntries(checked),cols:{nameCol,companyCol,seatCol},rawRows
+  }));
   document.getElementById('uploadCard').classList.add('hidden');
   toolsCard.classList.remove('hidden');
   exportCard.classList.remove('hidden');
+  listVisible=false;              // lista nascosta di default
+  tableCard.classList.add('hidden');
   renderTable();
 });
 
-/* -------------------- Render tabella & ricerca -------------------- */
+/* ===== RENDER TABELLA ===== */
 function renderTable(){
   tbody.innerHTML='';
 
-  // 1) Leggo l'input grezzo (senza trim) per intercettare lo spazio iniziale
-  const raw = searchBox.value ?? '';
-  const startsWithSpace = /^\s/.test(raw);       // true se il primo carattere è spazio
-  const q = norm(raw);                           // ricerca "robusta" (trim, no accenti, case-insensitive)
+  const qRaw = searchBox.value || '';
+  const q = qRaw.toLowerCase();
+  const showAllBySpace = (qRaw === ' '); // spazio singolo = mostra tutto
 
-  // 2) Se c'è spazio iniziale -> mostra TUTTI i nominativi (nessun filtro)
-  let rows;
-  if (startsWithSpace) {
-    rows = rawRows.slice();                      // copia della lista completa
-  } else {
+  let rows = [];
+  if (listVisible || showAllBySpace) {
+    rows = rawRows;
+  } else if (q.trim().length > 0) {
     rows = rawRows.filter(r=>{
-      const n = norm(r[nameCol]);
-      const a = companyCol ? norm(r[companyCol]) : '';
-      const p = seatCol ? norm(r[seatCol]) : '';
-      return !q || n.includes(q) || a.includes(q) || p.includes(q);
+      const name = String(r[nameCol]??'').toLowerCase();
+      const comp = companyCol ? String(r[companyCol]??'').toLowerCase() : '';
+      const seat = seatCol ? String(r[seatCol]??'').toLowerCase() : '';
+      return name.includes(q) || comp.includes(q) || seat.includes(q);
     });
+  } else {
+    rows = [];
   }
 
-  // 3) Mostra tabella se lista sbloccata, oppure se c'è query, oppure se c'è lo spazio-scorciatoia
-  if (rows.length && (listUnlocked || q || startsWithSpace)) {
-    tableCard.classList.remove('hidden');
-  } else if (!listUnlocked) {
-    tableCard.classList.add('hidden');
-  }
+  if (rows.length > 0) { tableCard.classList.remove('hidden'); }
+  else { tableCard.classList.add('hidden'); }
 
-  // 4) Rendering righe
   rows.forEach(r=>{
     const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${r[nameCol] ?? ''}</td><td>${companyCol?(r[companyCol] ?? ''):''}</td><td>${seatCol?(r[seatCol] ?? ''):''}</td>`;
-    if (checked.get(r[nameCol])) { tr.classList.add('confirmed'); tr.style.pointerEvents='none'; }
+    tr.innerHTML=`<td>${r[nameCol]}</td><td>${companyCol?r[companyCol]:''}</td><td>${seatCol?r[seatCol]:''}</td>`;
+    if(checked.get(r[nameCol])){ tr.classList.add('confirmed'); tr.style.pointerEvents='none'; }
     tr.addEventListener('click', ()=>{
-      if (checked.get(r[nameCol])) return;
+      if(checked.get(r[nameCol])) return;
+      // rimuovi selezione da eventuale altra riga
       [...tbody.children].forEach(row=>row.classList.remove('selected'));
+      // evidenzia questa
       tr.classList.add('selected');
-      tr.style.background='#2563eb';
       selectedRow=tr; selectedData=r;
       confirmCard.classList.remove('hidden');
     });
     tbody.appendChild(tr);
   });
 
-  updateCounter();
-}
-
-function updateCounter(){
-  let c=[...checked.values()].filter(v=>v).length;
+  const c=[...checked.values()].filter(v=>v).length;
   countChecked.textContent=c; countTotal.textContent=rawRows.length;
 }
-// Eventi input più robusti su iOS
-['input','keyup','change','compositionend'].forEach(ev => {
-  searchBox.addEventListener(ev, renderTable);
-});
+searchBox.addEventListener('input', renderTable);
 
-/* -------------------- Conferma ospite -------------------- */
+/* ===== CONFERMA OSPITE ===== */
 confirmBtn.addEventListener('click', ()=>{
   if(!selectedData) return;
   checked.set(selectedData[nameCol], new Date().toLocaleString());
-  saveState();
-  selectedRow.classList.remove('selected');
+  localStorage.setItem(`accredito:${fileKey}`,JSON.stringify({
+    checked:Object.fromEntries(checked),cols:{nameCol,companyCol,seatCol},rawRows
+  }));
+  inviaASheet(selectedData);
+
+  // pulizia stato visivo riga selezionata + conferma
+  if (selectedRow) selectedRow.classList.remove('selected');
   selectedRow.classList.add('confirmed');
-  selectedRow.style.background='#065f46';
   selectedRow.style.pointerEvents='none';
   confirmCard.classList.add('hidden');
-  searchBox.value="";
+
+  // Dopo conferma: nascondi tabella, azzera toggle, pulisci ricerca
+  listVisible = false;
+  searchBox.value = "";
+  tableCard.classList.add('hidden');
+
   popupConfirm.style.display="block";
   setTimeout(()=>popupConfirm.style.display="none",2000);
-  updateCounter();
+
   renderTable();
 });
 
-/* -------------------- Modal password -------------------- */
-function openModal(action){
-  pendingAction=action;
-  passwordInput.value='';
+/* ===== PULSANTI SOTTO ===== */
+showListBtn.addEventListener('click', ()=>{
+  listVisible = !listVisible;
+  if (listVisible) searchBox.value = ""; // mostra tutta la lista
+  renderTable();
+});
+
+reportBtn.addEventListener('click', ()=>{
+  let rows=rawRows.map(r=>({...r,CheckIn:checked.get(r[nameCol])||''}));
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Report');
+  XLSX.writeFile(wb,'report_completo.xlsx');
+});
+
+/* ===== RESET CON PASSWORD (2006) ===== */
+resetBtn.addEventListener('click', ()=>{
   modal.classList.add('show');
-}
-function closeModal(){modal.classList.remove('show');}
+  passwordInput.value="";
+});
+
+modalCancel.addEventListener('click',()=>{
+  modal.classList.remove('show');
+});
+
 document.querySelectorAll('.keypad button').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
+  btn.addEventListener('click',()=>{
     let val=btn.textContent;
-    if(val==='←'){passwordInput.value=passwordInput.value.slice(0,-1);}
-    else if(val==='OK'){modalConfirm.click();}
-    else {passwordInput.value+=val;}
+    if(val==='←'){ passwordInput.value=passwordInput.value.slice(0,-1); }
+    else if(val==='OK'){ modalConfirm.click(); }
+    else { passwordInput.value+=val; }
   });
 });
-modalConfirm.addEventListener('click', ()=>{
+
+modalConfirm.addEventListener('click',()=>{
   if(passwordInput.value==="2006"){
-    closeModal();
-    if(pendingAction==="report"){
-      // Esporta sempre tutte le righe + colonna CheckIn
-      let rows=rawRows.map(r=>({...r, CheckIn:checked.get(r[nameCol])||''}));
-      const ws=XLSX.utils.json_to_sheet(rows); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Report');
-      XLSX.writeFile(wb, 'report_completo.xlsx');
-    } else if(pendingAction==="reset"){
-      localStorage.clear(); location.reload();
-    } else if(pendingAction==="showlist"){
-      listUnlocked=!listUnlocked;
-      if(!listUnlocked){tableCard.classList.add('hidden');}
-      else {renderTable();}
-    }
+    modal.classList.remove('show');
+
+    // Reset completo
+    localStorage.clear();
+    rawRows = [];
+    headers = [];
+    nameCol = companyCol = seatCol = null;
+    checked = new Map();
+    selectedRow = selectedData = null;
+    listVisible = false;
+
+    // Ricarica tool pulito
+    location.reload(true);
   } else {
     alert("Password errata");
   }
 });
-modalCancel.addEventListener('click', closeModal);
-
-reportBtn.addEventListener('click', ()=>openModal("report"));
-resetBtn.addEventListener('click', ()=>openModal("reset"));
-showListBtn.addEventListener('click', ()=>openModal("showlist"));
-
-/* -------------------- Ripristino stato all'avvio -------------------- */
-window.addEventListener('DOMContentLoaded', loadState);
 </script>
 </body>
 </html>
