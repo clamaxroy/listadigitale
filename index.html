@@ -4,25 +4,11 @@
   <meta charset="utf-8" />
   <title>Accredito Ospiti – Check-in Tool iPad</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <!-- iOS: avvia come web app a schermo pieno -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Check-in Tool">
-<link rel="apple-touch-icon" href="icon.png">
-
-<!-- Android/Chromium: PWA standalone -->
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#1f2937">
-
-<!-- Viewport “bloccato” (già presente) -->
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#2b384b;color:#fff;margin:0;padding:15px}
     h1{text-align:center;font-size:22px;margin-bottom:20px}
     .card{background:#1f2937;border-radius:10px;padding:15px;margin-bottom:15px}
-    input[type="file"], select{padding:12px;border-radius:8px;border:none;width:100%;margin:6px 0;font-size:18px}
     #searchBox{padding:12px;border-radius:8px;border:none;width:70%;margin:6px auto;display:block;font-size:18px}
     table{width:100%;border-collapse:collapse;margin-top:10px;font-size:18px}
     th,td{padding:14px;border-bottom:1px solid #444}
@@ -30,7 +16,6 @@
     tr{cursor:pointer}
     tr:hover{background:#4b5563}
     tr.confirmed{background:#065f46!important;color:#fff}
-    /* ➕ Evidenziazione riga selezionata */
     tr.selected{background:#2563eb!important;color:#fff}
     button{padding:12px 14px;border:none;border-radius:8px;cursor:pointer;margin:6px;font-size:16px}
     button.primary{background:#e52013;color:#fff}
@@ -44,7 +29,6 @@
     #showListBtn{background:#2563eb}
     #reportBtn{background:#d97706}
     #resetBtn{background:#dc2626}
-
     /* Modal password */
     .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;visibility:hidden;opacity:0;transition:opacity .3s;}
     .modal.show{visibility:visible;opacity:1;}
@@ -59,15 +43,6 @@
 </head>
 <body>
   <h1>TAGLIO NASTRO – Accredito Ospiti</h1>
-
-  <div class="card" id="uploadCard">
-    <h3>1) Carica lista ospiti (Excel/CSV)</h3>
-    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
-    <select id="colName" disabled></select>
-    <select id="colCompany" disabled></select>
-    <select id="colSeat" disabled></select>
-    <button id="apply" class="primary" disabled>Carica elenco</button>
-  </div>
 
   <div class="card hidden" id="toolsCard">
     <input type="text" id="searchBox" placeholder="Cerca ospite… (spazio = mostra tutti)" autofocus>
@@ -113,19 +88,12 @@
 
 <script>
 /* ===== CONFIG GOOGLE SHEET ===== */
-const sheetWebhookURL = "https://script.google.com/macros/s/AKfycbxI70JC0FOpsOmcUcTl2HP-V8ZZjJKOs8LAAaiwn9Dk3DwuvMLwy8BYgK8Z0NnMGZl3/exec";
+const sheetURL = "https://script.google.com/macros/s/AKfycbxc0CVUVioXJ4vgVWf_7fMe3S9NE0fS9RbOE--Om8sPPEJfl5ix4ttb1lp3mrGMLFn2/exec";
 
 /* ===== VARIABILI ===== */
-let rawRows=[], headers=[], nameCol=null, companyCol=null, seatCol=null;
-let checked=new Map(), selectedRow=null, selectedData=null;
-const fileKey="accredito_current";
-let listVisible=false; // stato del toggle Mostra/Nascondi
+let rawRows=[], selectedRow=null, selectedData=null;
+let listVisible=false;
 
-const fileInput=document.getElementById('fileInput');
-const colName=document.getElementById('colName');
-const colCompany=document.getElementById('colCompany');
-const colSeat=document.getElementById('colSeat');
-const apply=document.getElementById('apply');
 const searchBox=document.getElementById('searchBox');
 const tbody=document.getElementById('tbody');
 const toolsCard=document.getElementById('toolsCard');
@@ -144,96 +112,54 @@ const passwordInput=document.getElementById('passwordInput');
 const modalConfirm=document.getElementById('modalConfirm');
 const modalCancel=document.getElementById('modalCancel');
 
-/* ===== INVIO A GOOGLE SHEET ===== */
-async function inviaASheet(dati){
+/* ===== FUNZIONI ===== */
+async function caricaLista(){
   try{
-    await fetch(sheetWebhookURL,{
-      method:"POST",
-      headers:{"Content-Type":"text/plain"},
-      body:JSON.stringify({
-        nome:String(dati[nameCol]||""),
-        azienda:companyCol?String(dati[companyCol]||""):"",
-        posto:seatCol?String(dati[seatCol]||""):""
-      })
-    });
-  }catch(err){console.error("Errore rete:",err);}
+    let res = await fetch(sheetURL);
+    let data = await res.json();
+    rawRows = data;
+    renderTable();
+    toolsCard.classList.remove('hidden');
+    exportCard.classList.remove('hidden');
+  }catch(err){console.error("Errore caricamento:",err);}
 }
 
-/* ===== FILE UPLOAD ===== */
-fileInput.addEventListener('change', e=>{
-  const file=e.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=evt=>{
-    const wb=XLSX.read(new Uint8Array(evt.target.result),{type:'array'});
-    const ws=wb.Sheets[wb.SheetNames[0]];
-    const json=XLSX.utils.sheet_to_json(ws,{defval:''});
-    if(!json.length){alert('Foglio vuoto');return;}
-    rawRows=json; headers=Object.keys(json[0]);
-    [colName,colCompany,colSeat].forEach(sel=>{
-      sel.innerHTML='';
-      const opt0=document.createElement('option');opt0.value='';opt0.textContent='— seleziona colonna —';
-      sel.appendChild(opt0);
-      headers.forEach(h=>{
-        const opt=document.createElement('option');opt.value=h;opt.textContent=h;sel.appendChild(opt);
-      });
-      sel.disabled=false;
+async function confermaOspite(dati){
+  try{
+    await fetch(sheetURL,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify(dati)
     });
-    apply.disabled=false;
-  };
-  reader.readAsArrayBuffer(file);
-});
+  }catch(err){console.error("Errore POST:",err);}
+}
 
-/* ===== APPLICA ===== */
-apply.addEventListener('click', ()=>{
-  nameCol=colName.value; companyCol=colCompany.value; seatCol=colSeat.value;
-  if(!nameCol){alert('Seleziona almeno la colonna Nome');return;}
-  checked.clear();
-  rawRows.forEach(r=>checked.set(r[nameCol],false));
-  localStorage.setItem(`accredito:${fileKey}`, JSON.stringify({
-    checked:Object.fromEntries(checked),cols:{nameCol,companyCol,seatCol},rawRows
-  }));
-  document.getElementById('uploadCard').classList.add('hidden');
-  toolsCard.classList.remove('hidden');
-  exportCard.classList.remove('hidden');
-  listVisible=false;              // lista nascosta di default
-  tableCard.classList.add('hidden');
-  renderTable();
-});
-
-/* ===== RENDER TABELLA ===== */
 function renderTable(){
   tbody.innerHTML='';
-
   const qRaw = searchBox.value || '';
   const q = qRaw.toLowerCase();
-  const showAllBySpace = (qRaw === ' '); // spazio singolo = mostra tutto
+  const showAllBySpace = (qRaw === ' ');
 
-  let rows = [];
-  if (listVisible || showAllBySpace) {
-    rows = rawRows;
-  } else if (q.trim().length > 0) {
-    rows = rawRows.filter(r=>{
-      const name = String(r[nameCol]??'').toLowerCase();
-      const comp = companyCol ? String(r[companyCol]??'').toLowerCase() : '';
-      const seat = seatCol ? String(r[seatCol]??'').toLowerCase() : '';
-      return name.includes(q) || comp.includes(q) || seat.includes(q);
+  let rows=[];
+  if(listVisible || showAllBySpace){rows=rawRows;}
+  else if(q.trim().length>0){
+    rows=rawRows.filter(r=>{
+      return String(r.nome??'').toLowerCase().includes(q) ||
+             String(r.azienda??'').toLowerCase().includes(q) ||
+             String(r.posto??'').toLowerCase().includes(q);
     });
-  } else {
-    rows = [];
   }
 
-  if (rows.length > 0) { tableCard.classList.remove('hidden'); }
-  else { tableCard.classList.add('hidden'); }
+  if(rows.length>0){tableCard.classList.remove('hidden');}
+  else{tableCard.classList.add('hidden');}
 
   rows.forEach(r=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${r[nameCol]}</td><td>${companyCol?r[companyCol]:''}</td><td>${seatCol?r[seatCol]:''}</td>`;
-    if(checked.get(r[nameCol])){ tr.classList.add('confirmed'); tr.style.pointerEvents='none'; }
-    tr.addEventListener('click', ()=>{
-      if(checked.get(r[nameCol])) return;
-      // rimuovi selezione da eventuale altra riga
+    tr.innerHTML=`<td>${r.nome}</td><td>${r.azienda||''}</td><td>${r.posto||''}</td>`;
+    if(r.confermato=="SI"){tr.classList.add('confirmed');tr.style.pointerEvents='none';}
+    tr.addEventListener('click',()=>{
+      if(r.confermato=="SI") return;
       [...tbody.children].forEach(row=>row.classList.remove('selected'));
-      // evidenzia questa
       tr.classList.add('selected');
       selectedRow=tr; selectedData=r;
       confirmCard.classList.remove('hidden');
@@ -241,90 +167,58 @@ function renderTable(){
     tbody.appendChild(tr);
   });
 
-  const c=[...checked.values()].filter(v=>v).length;
+  let c=rawRows.filter(r=>r.confermato=="SI").length;
   countChecked.textContent=c; countTotal.textContent=rawRows.length;
 }
 searchBox.addEventListener('input', renderTable);
 
-/* ===== CONFERMA OSPITE ===== */
 confirmBtn.addEventListener('click', ()=>{
   if(!selectedData) return;
-  checked.set(selectedData[nameCol], new Date().toLocaleString());
-  localStorage.setItem(`accredito:${fileKey}`,JSON.stringify({
-    checked:Object.fromEntries(checked),cols:{nameCol,companyCol,seatCol},rawRows
-  }));
-  inviaASheet(selectedData);
-
-  // pulizia stato visivo riga selezionata + conferma
-  if (selectedRow) selectedRow.classList.remove('selected');
+  confermaOspite(selectedData);
+  if(selectedRow) selectedRow.classList.remove('selected');
   selectedRow.classList.add('confirmed');
   selectedRow.style.pointerEvents='none';
   confirmCard.classList.add('hidden');
-
-  // Dopo conferma: nascondi tabella, azzera toggle, pulisci ricerca
-  listVisible = false;
-  searchBox.value = "";
-  tableCard.classList.add('hidden');
-
+  listVisible=false; searchBox.value=""; tableCard.classList.add('hidden');
   popupConfirm.style.display="block";
   setTimeout(()=>popupConfirm.style.display="none",2000);
-
-  renderTable();
+  setTimeout(caricaLista,1000); // ricarica lista aggiornata
 });
 
-/* ===== PULSANTI SOTTO ===== */
 showListBtn.addEventListener('click', ()=>{
-  listVisible = !listVisible;
-  if (listVisible) searchBox.value = ""; // mostra tutta la lista
+  listVisible=!listVisible;
+  if(listVisible) searchBox.value="";
   renderTable();
 });
 
 reportBtn.addEventListener('click', ()=>{
-  let rows=rawRows.map(r=>({...r,CheckIn:checked.get(r[nameCol])||''}));
-  const ws=XLSX.utils.json_to_sheet(rows);
+  const ws=XLSX.utils.json_to_sheet(rawRows);
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Report');
   XLSX.writeFile(wb,'report_completo.xlsx');
 });
 
 /* ===== RESET CON PASSWORD (2006) ===== */
-resetBtn.addEventListener('click', ()=>{
-  modal.classList.add('show');
-  passwordInput.value="";
+resetBtn.addEventListener('click',()=>{
+  modal.classList.add('show'); passwordInput.value="";
 });
-
-modalCancel.addEventListener('click',()=>{
-  modal.classList.remove('show');
-});
-
+modalCancel.addEventListener('click',()=>{modal.classList.remove('show');});
 document.querySelectorAll('.keypad button').forEach(btn=>{
   btn.addEventListener('click',()=>{
     let val=btn.textContent;
-    if(val==='←'){ passwordInput.value=passwordInput.value.slice(0,-1); }
-    else if(val==='OK'){ modalConfirm.click(); }
-    else { passwordInput.value+=val; }
+    if(val==='←'){passwordInput.value=passwordInput.value.slice(0,-1);}
+    else if(val==='OK'){modalConfirm.click();}
+    else{passwordInput.value+=val;}
   });
 });
-
 modalConfirm.addEventListener('click',()=>{
-  if(passwordInput.value==="2006"){
-    modal.classList.remove('show');
-
-    // Reset completo
-    localStorage.clear();
-    rawRows = [];
-    headers = [];
-    nameCol = companyCol = seatCol = null;
-    checked = new Map();
-    selectedRow = selectedData = null;
-    listVisible = false;
-
-    // Ricarica tool pulito
-    location.reload(true);
-  } else {
-    alert("Password errata");
-  }
+  if(passwordInput.value==="2006"){ modal.classList.remove('show'); location.reload(true);}
+  else{alert("Password errata");}
 });
+
+/* ===== AVVIO ===== */
+caricaLista();
+setInterval(caricaLista,5000); // aggiorna ogni 5s
 </script>
 </body>
 </html>
