@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <title>Accredito Ospiti – Check-in Tool iPad</title>
+  <title>Checkfast Lista Digitale</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -42,11 +42,11 @@
   </style>
 </head>
 <body>
-  <h1>TAGLIO NASTRO – Accredito Ospiti</h1>
+  <h1>Checkfast Ospiti</h1>
 
   <div class="card hidden" id="toolsCard">
-    <input type="text" id="searchBox" placeholder="Cerca ospite… (spazio = mostra tutti)" autofocus>
-    <div class="counter"><span id="countChecked">0</span> ingressi confermati su <span id="countTotal">0</span></div>
+    <input type="text" id="searchBox" placeholder="Cerca ospite" autofocus>
+    <div class="counter"><span id="countChecked">0</span> / <span id="countTotal">0</span></div>
   </div>
 
   <div class="card hidden" id="tableCard">
@@ -61,9 +61,9 @@
   </div>
 
   <div class="actionsBottom hidden" id="exportCard">
-    <button id="showListBtn">Mostra/Nascondi Ospiti</button>
-    <button id="reportBtn">Scarica Report</button>
-    <button id="resetBtn">Reset 🔒</button>
+    <button id="showListBtn">Mostra/Nascondi</button>
+    <button id="reportBtn">Report</button>
+    <button id="resetBtn">Reset</button>
   </div>
 
   <div class="popupConfirm" id="popupConfirm">Ospite Accreditato</div>
