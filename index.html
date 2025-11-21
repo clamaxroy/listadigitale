@@ -6,6 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
+  .logoBox{
+  width:100%;
+  text-align:center;
+  margin-bottom:15px;
+}
+.logoImg{
+  max-width:150px;
+  height:auto;
+  filter:brightness(1);
+}
+
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#2b384b;color:#fff;margin:0;padding:15px}
     h1{text-align:center;font-size:22px;margin-bottom:20px}
     .card{background:#1f2937;border-radius:10px;padding:15px;margin-bottom:15px}
@@ -42,7 +53,11 @@
   </style>
 </head>
 <body>
-  <h1>CHECKFAST®</h1>
+
+  <div class="logoBox">
+  <img src="https://static.wixstatic.com/media/2080b2_091288fac9ef49fb875e82a42f827415~mv2.png" alt="Logo" class="logoImg">
+</div>
+  <h1>TITOLO EVENTO</h1>
 
   <div class="card hidden" id="toolsCard">
     <input type="text" id="searchBox" placeholder="Cerca ospite" autofocus>
@@ -93,6 +108,7 @@ const sheetURL = "https://script.google.com/macros/s/AKfycbxc0CVUVioXJ4vgVWf_7fM
 /* ===== VARIABILI ===== */
 let rawRows=[], selectedRow=null, selectedData=null;
 let listVisible=false;
+let selectedKey = null;  // memorizza la riga selezionata
 
 const searchBox=document.getElementById('searchBox');
 const tbody=document.getElementById('tbody');
@@ -141,48 +157,106 @@ function renderTable(){
   const showAllBySpace = (qRaw === ' ');
 
   let rows=[];
-  if(listVisible || showAllBySpace){rows=rawRows;}
-  else if(q.trim().length>0){
-    rows=rawRows.filter(r=>{
-      return String(r.nome??'').toLowerCase().includes(q) ||
-             String(r.azienda??'').toLowerCase().includes(q) ||
-             String(r.posto??'').toLowerCase().includes(q);
+  if(listVisible || showAllBySpace){
+    rows = rawRows;
+  } else if(q.trim().length > 0){
+    rows = rawRows.filter(r=>{
+      return String(r.nome ?? '').toLowerCase().includes(q) ||
+             String(r.azienda ?? '').toLowerCase().includes(q) ||
+             String(r.posto ?? '').toLowerCase().includes(q);
     });
   }
 
-  if(rows.length>0){tableCard.classList.remove('hidden');}
-  else{tableCard.classList.add('hidden');}
+  if(rows.length > 0){
+    tableCard.classList.remove('hidden');
+  } else {
+    tableCard.classList.add('hidden');
+  }
 
   rows.forEach(r=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${r.nome}</td><td>${r.azienda||''}</td><td>${r.posto||''}</td>`;
-    if(r.confermato=="SI"){tr.classList.add('confirmed');tr.style.pointerEvents='none';}
-    tr.addEventListener('click',()=>{
-      if(r.confermato=="SI") return;
-      [...tbody.children].forEach(row=>row.classList.remove('selected'));
+    tr.innerHTML = `<td>${r.nome || ''}</td><td>${r.azienda || ''}</td><td>${r.posto || ''}</td>`;
+
+    // ospite già confermato (come in listadigitale1: colonna "confermato" = "SI")
+    const giaConfermato = (r.confermato === "SI");
+    if(giaConfermato){
+      tr.classList.add('confirmed');
+      tr.style.pointerEvents='none';
+    }
+
+    // chiave univoca per ricordare la riga selezionata
+    const key = (r.nome || '') + '|' + (r.azienda || '') + '|' + (r.posto || '');
+
+    // click sulla riga
+    tr.addEventListener('click', () => {
+      if (giaConfermato) return;
+
+      // se è già selezionata → la deseleziono (toggle)
+      if (tr.classList.contains('selected')) {
+        tr.classList.remove('selected');
+        selectedRow = null;
+        selectedData = null;
+        selectedKey  = null;
+        confirmCard.classList.add('hidden');
+        return;
+      }
+
+      // altrimenti tolgo la selezione da tutte le altre righe
+      [...tbody.children].forEach(row => row.classList.remove('selected'));
+
+      // seleziono questa
       tr.classList.add('selected');
-      selectedRow=tr; selectedData=r;
+      selectedRow = tr;
+      selectedData = r;
+      selectedKey  = key;
       confirmCard.classList.remove('hidden');
     });
+
+    // se dopo un refresh questa è la riga selezionata → riselezionala
+    if (!giaConfermato && selectedKey === key) {
+      tr.classList.add('selected');
+      selectedRow = tr;
+      selectedData = r;
+      confirmCard.classList.remove('hidden');
+    }
+
     tbody.appendChild(tr);
   });
 
-  let c=rawRows.filter(r=>r.confermato=="SI").length;
-  countChecked.textContent=c; countTotal.textContent=rawRows.length;
+  // conteggio ospiti confermati (come prima: "confermato" = "SI")
+  let c = rawRows.filter(r => r.confermato === "SI").length;
+  countChecked.textContent = c;
+  countTotal.textContent   = rawRows.length;
 }
+
 searchBox.addEventListener('input', renderTable);
 
 confirmBtn.addEventListener('click', ()=>{
   if(!selectedData) return;
+
+  // invia i dati al backend (come prima)
   confermaOspite(selectedData);
-  if(selectedRow) selectedRow.classList.remove('selected');
-  selectedRow.classList.add('confirmed');
-  selectedRow.style.pointerEvents='none';
+
+  if (selectedRow) {
+    selectedRow.classList.remove('selected');
+    selectedRow.classList.add('confirmed');
+    selectedRow.style.pointerEvents = 'none';
+  }
+
+  // pulisco la selezione salvata
+  selectedRow = null;
+  selectedData = null;
+  selectedKey  = null;
+
   confirmCard.classList.add('hidden');
-  listVisible=false; searchBox.value=""; tableCard.classList.add('hidden');
-  popupConfirm.style.display="block";
-  setTimeout(()=>popupConfirm.style.display="none",2000);
-  setTimeout(caricaLista,1000); // ricarica lista aggiornata
+  listVisible = false;
+  searchBox.value = "";
+
+  popupConfirm.style.display = "block";
+  setTimeout(()=>popupConfirm.style.display = "none", 2000);
+
+  // ricarico la lista dopo 1 secondo
+  setTimeout(caricaLista, 1000);
 });
 
 showListBtn.addEventListener('click', ()=>{
