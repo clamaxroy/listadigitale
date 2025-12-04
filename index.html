@@ -7,61 +7,126 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
   .logoBox{
-  width:100%;
-  text-align:center;
-  margin-bottom:15px;
-}
-.logoImg{
-  max-width:150px;
-  height:auto;
-  filter:brightness(1);
-}
+    width:100%;
+    text-align:center;
+    margin-bottom:15px;
+  }
+  .logoImg{
+    max-width:150px;
+    height:auto;
+    filter:brightness(1);
+  }
 
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#2b384b;color:#fff;margin:0;padding:15px}
-    h1{text-align:center;font-size:22px;margin-bottom:20px}
-    .card{background:#1f2937;border-radius:10px;padding:15px;margin-bottom:15px}
-    #searchBox{padding:12px;border-radius:8px;border:none;width:70%;margin:6px auto;display:block;font-size:18px}
-    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:18px}
-    th,td{padding:14px;border-bottom:1px solid #444}
-    th{background:#374151;text-align:left}
-    tr{cursor:pointer}
-    tr:hover{background:#4b5563}
-    tr.confirmed{
-  background:#4CAF50!important;  /* verde del tuo esempio */
-  color:#fff;
-}
-    tr.selected{background:#2563eb!important;color:#fff}
-    button{padding:12px 14px;border:none;border-radius:8px;cursor:pointer;margin:6px;font-size:16px}
-    button.primary{background:#e52013;color:#fff}
-    button.ok{background:#16a34a;color:#fff}
-    .counter{margin-top:10px;font-size:20px;text-align:center}
-    .hidden{display:none}
-    .popupConfirm{position:fixed;top:15%;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:30px 40px;border-radius:12px;font-size:26px;font-weight:bold;display:none;z-index:99999;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.6);animation:pop .3s ease-out}
-    @keyframes pop{from{transform:translateX(-50%) scale(.9);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
-    .actionsBottom{text-align:center;margin-top:30px}
-    .actionsBottom button{min-width:140px;margin:8px;font-size:16px;color:#fff}
-    #showListBtn{background:#2563eb}
-    #reportBtn{background:#d97706}
-    #resetBtn{background:#dc2626}
-    /* Modal password */
-    .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;visibility:hidden;opacity:0;transition:opacity .3s;}
-    .modal.show{visibility:visible;opacity:1;}
-    .modal-content{background:#1f2937;padding:20px;border-radius:12px;text-align:center;width:300px;}
-    .modal h2{margin:0 0 15px;font-size:20px}
-    .modal input{width:100%;font-size:22px;padding:12px;border-radius:8px;border:none;text-align:center;margin-bottom:15px;background:#fff;color:#000;}
-    .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:15px}
-    .keypad button{font-size:22px;padding:15px;border-radius:8px;background:#374151;color:#fff}
-    .modal .actions{display:flex;justify-content:space-between}
-    .modal button.action{width:48%;font-size:18px}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:#2b384b;
+    color:#fff;
+    margin:0;
+    padding:15px
+  }
+  h1{
+    text-align:center;
+    font-size:22px;
+    margin-bottom:20px
+  }
+  .card{
+    background:#1f2937;
+    border-radius:10px;
+    padding:15px;
+    margin-bottom:15px
+  }
+  #searchBox{
+    padding:12px;
+    border-radius:8px;
+    border:none;
+    width:70%;
+    margin:6px auto;
+    display:block;
+    font-size:18px
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px
+  }
+  th,td{
+    padding:10px;
+    border-bottom:1px solid #374151;
+    font-size:16px
+  }
+  th{
+    background:#111827;
+    position:sticky;
+    top:0;
+    z-index:2;
+    text-align:left
+  }
+  tr:nth-child(even){background:#111827}
+  tr:nth-child(odd){background:#020617}
+  tr.confirmed{
+    background:#4CAF50!important;
+    color:#fff
+  }
+  tr.selected{
+    background:#2563eb!important;
+    color:#fff
+  }
+  button{
+    padding:12px 14px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    margin:6px;
+    font-size:16px
+  }
+  button.primary{background:#e52013;color:#fff}
+  button.ok{background:#16a34a;color:#fff}
+  .counter{
+    margin-top:10px;
+    font-size:20px;
+    text-align:center
+  }
+  .hidden{display:none}
+  .popupConfirm{
+    position:fixed;
+    top:15%;
+    left:50%;
+    transform:translateX(-50%);
+    background:#16a34a;
+    color:#fff;
+    padding:20px 40px;
+    border-radius:999px;
+    font-size:25px;
+    display:none;
+    z-index:999;
+    box-shadow:0 6px 20px rgba(0,0,0,0.6);
+    animation:pop .3s ease-out
+  }
+  @keyframes pop{
+    from{transform:translateX(-50%) scale(.9);opacity:0}
+    to{transform:translateX(-50%) scale(1);opacity:1}
+  }
+  .actionsBottom{
+    text-align:center;
+    margin-top:30px
+  }
+  .actionsBottom button{
+    min-width:140px;
+    margin:8px;
+    font-size:16px;
+    color:#fff
+  }
+  #showListBtn{background:#2563eb}
+  #reportBtn{background:#d97706}
+  #registerNewBtn{background:#16a34a}
   </style>
 </head>
 <body>
-
   <div class="logoBox">
-  <img src="https://static.wixstatic.com/media/2080b2_091288fac9ef49fb875e82a42f827415~mv2.png" alt="Logo" class="logoImg">
-</div>
+    <img src="https://static.wixstatic.com/media/2080b2_091288fac9ef49fb875e82a42f827415~mv2.png" alt="Logo" class="logoImg">
+  </div>
   <h1>TITOLO EVENTO</h1>
-
+  
   <div class="card hidden" id="toolsCard">
     <input type="text" id="searchBox" placeholder="Cerca ospite" autofocus>
     <div class="counter"><span id="countChecked">0</span> / <span id="countTotal">0</span></div>
@@ -81,88 +146,83 @@
   <div class="actionsBottom hidden" id="exportCard">
     <button id="showListBtn">Mostra/Nascondi</button>
     <button id="reportBtn">Report</button>
-    <button id="resetBtn">Reset</button>
+    <button id="registerNewBtn">Registra nuovo ospite</button>
   </div>
 
   <div class="popupConfirm" id="popupConfirm">Ospite Accreditato</div>
 
-  <!-- Modal password -->
-  <div id="passwordModal" class="modal">
-    <div class="modal-content">
-      <h2>Inserisci Password</h2>
-      <input type="password" id="passwordInput" readonly>
-      <div class="keypad">
-        <button>1</button><button>2</button><button>3</button>
-        <button>4</button><button>5</button><button>6</button>
-        <button>7</button><button>8</button><button>9</button>
-        <button>←</button><button>0</button><button>OK</button>
-      </div>
-      <div class="actions">
-        <button class="action ok" id="modalConfirm">Conferma</button>
-        <button class="action primary" id="modalCancel">Annulla</button>
-      </div>
-    </div>
-  </div>
-
-<script>
-/* ===== CONFIG GOOGLE SHEET ===== */
-const sheetURL = "https://script.google.com/macros/s/AKfycbxc0CVUVioXJ4vgVWf_7fMe3S9NE0fS9RbOE--Om8sPPEJfl5ix4ttb1lp3mrGMLFn2/exec";
+  <script>
+/* ===== URL WEB APP GOOGLE APPS SCRIPT ===== */
+const sheetURL = "https://script.google.com/macros/s/AKfycbzE92_7B0PDEJIxwGodl4M03r9jybsmS-gijtrr3mamDPd3m10XpBf_CuWgsHn8d5Gg/exec";
 
 /* ===== VARIABILI ===== */
-let rawRows=[], selectedRow=null, selectedData=null;
-let listVisible=false;
-let selectedKey = null;  // memorizza la riga selezionata
+let rawRows = [];
+let selectedRow = null;
+let selectedData = null;
+let listVisible = false;
+let selectedKey = null;
 
-const searchBox=document.getElementById('searchBox');
-const tbody=document.getElementById('tbody');
-const toolsCard=document.getElementById('toolsCard');
-const tableCard=document.getElementById('tableCard');
-const confirmCard=document.getElementById('confirmCard');
-const confirmBtn=document.getElementById('confirmBtn');
-const countChecked=document.getElementById('countChecked');
-const countTotal=document.getElementById('countTotal');
-const popupConfirm=document.getElementById('popupConfirm');
-const exportCard=document.getElementById('exportCard');
-const showListBtn=document.getElementById('showListBtn');
-const reportBtn=document.getElementById('reportBtn');
-const resetBtn=document.getElementById('resetBtn');
-const modal=document.getElementById('passwordModal');
-const passwordInput=document.getElementById('passwordInput');
-const modalConfirm=document.getElementById('modalConfirm');
-const modalCancel=document.getElementById('modalCancel');
+const searchBox   = document.getElementById('searchBox');
+const tbody       = document.getElementById('tbody');
+const toolsCard   = document.getElementById('toolsCard');
+const tableCard   = document.getElementById('tableCard');
+const confirmCard = document.getElementById('confirmCard');
+const confirmBtn  = document.getElementById('confirmBtn');
+const countChecked= document.getElementById('countChecked');
+const countTotal  = document.getElementById('countTotal');
+const popupConfirm= document.getElementById('popupConfirm');
+const exportCard  = document.getElementById('exportCard');
+const showListBtn = document.getElementById('showListBtn');
+const reportBtn   = document.getElementById('reportBtn');
+const registerNewBtn = document.getElementById('registerNewBtn');
 
-/* ===== FUNZIONI ===== */
+/* ===== CARICA LISTA DA SHEET (GET) ===== */
 async function caricaLista(){
   try{
-    let res = await fetch(sheetURL);
-    let data = await res.json();
+    const res = await fetch(sheetURL);
+    const data = await res.json();
     rawRows = data;
     renderTable();
     toolsCard.classList.remove('hidden');
     exportCard.classList.remove('hidden');
-  }catch(err){console.error("Errore caricamento:",err);}
+  }catch(err){
+    console.error("Errore caricamento:", err);
+  }
 }
 
-async function confermaOspite(dati){
-  try{
-    await fetch(sheetURL,{
-      method:"POST",
-      headers:{"Content-Type":"text/plain"},
-      body:JSON.stringify(dati)
-    });
-  }catch(err){console.error("Errore POST:",err);}
+/* ===== CONTATORI (totale / confermati) ===== */
+function aggiornaContatori(){
+  const total = rawRows.length;
+
+  // Considero "confermato" qualsiasi valore NON vuoto nella colonna Confermato
+  const checked = rawRows.filter(r => {
+    const v = (r.confermato || "").toString().trim();
+    return v !== "";
+  }).length;
+
+  countTotal.textContent = total;
+  countChecked.textContent = checked;
 }
 
+/* ===== RENDER TABELLA ===== */
 function renderTable(){
-  tbody.innerHTML='';
-  const qRaw = searchBox.value || '';
-  const q = qRaw.toLowerCase();
-  const showAllBySpace = (qRaw === ' ');
+  tbody.innerHTML = "";
+  confirmCard.classList.add('hidden');
+  selectedRow = null;
+  selectedData = null;
 
-  let rows=[];
-  if(listVisible || showAllBySpace){
-    rows = rawRows;
-  } else if(q.trim().length > 0){
+  let q = searchBox.value.trim().toLowerCase();
+  let rows = rawRows;
+
+  // se lista non visibile e ricerca vuota → non mostra nulla
+  if(!listVisible && q === ""){
+    tableCard.classList.add('hidden');
+    aggiornaContatori();
+    return;
+  }
+
+  // filtro se c'è testo nel campo
+  if(q !== ""){
     rows = rawRows.filter(r=>{
       return String(r.nome ?? '').toLowerCase().includes(q) ||
              String(r.azienda ?? '').toLowerCase().includes(q) ||
@@ -177,46 +237,42 @@ function renderTable(){
   }
 
   rows.forEach(r=>{
-    const tr=document.createElement('tr');
+    const tr = document.createElement('tr');
     tr.innerHTML = `<td>${r.nome || ''}</td><td>${r.azienda || ''}</td><td>${r.posto || ''}</td>`;
 
-    // ospite già confermato (come in listadigitale1: colonna "confermato" = "SI")
-    const giaConfermato = (r.confermato === "SI");
+    const giaConfermato = !!(r.confermato && String(r.confermato).trim() !== "");
     if(giaConfermato){
       tr.classList.add('confirmed');
-      tr.style.pointerEvents='none';
+      tr.style.pointerEvents = 'none';
     }
 
-    // chiave univoca per ricordare la riga selezionata
     const key = (r.nome || '') + '|' + (r.azienda || '') + '|' + (r.posto || '');
 
-    // click sulla riga
     tr.addEventListener('click', () => {
       if (giaConfermato) return;
 
-      // se è già selezionata → la deseleziono (toggle)
+      // toggle selezione
       if (tr.classList.contains('selected')) {
         tr.classList.remove('selected');
         selectedRow = null;
         selectedData = null;
-        selectedKey  = null;
+        selectedKey = null;
         confirmCard.classList.add('hidden');
         return;
       }
 
-      // altrimenti tolgo la selezione da tutte le altre righe
-      [...tbody.children].forEach(row => row.classList.remove('selected'));
+      if (selectedRow) {
+        selectedRow.classList.remove('selected');
+      }
 
-      // seleziono questa
       tr.classList.add('selected');
       selectedRow = tr;
       selectedData = r;
-      selectedKey  = key;
+      selectedKey = key;
       confirmCard.classList.remove('hidden');
     });
 
-    // se dopo un refresh questa è la riga selezionata → riselezionala
-    if (!giaConfermato && selectedKey === key) {
+    if (selectedKey && key === selectedKey) {
       tr.classList.add('selected');
       selectedRow = tr;
       selectedData = r;
@@ -226,76 +282,135 @@ function renderTable(){
     tbody.appendChild(tr);
   });
 
-  // conteggio ospiti confermati (come prima: "confermato" = "SI")
-  let c = rawRows.filter(r => r.confermato === "SI").length;
-  countChecked.textContent = c;
-  countTotal.textContent   = rawRows.length;
+  aggiornaContatori();
 }
 
-searchBox.addEventListener('input', renderTable);
+/* ===== INVIO DATI A APPS SCRIPT (POST) ===== */
+/* ===== INVIO DATI A APPS SCRIPT (POST) ===== */
+/* ===== INVIO DATI A APPS SCRIPT (POST) ===== */
+/* ===== INVIO DATI A APPS SCRIPT (POST) ===== */
+async function confermaOspite(dati){
 
-confirmBtn.addEventListener('click', ()=>{
-  if(!selectedData) return;
+  // Mostro subito il popup
+  popupConfirm.textContent = "Ospite accreditato";
+  popupConfirm.style.display = 'block';
 
-  // invia i dati al backend (come prima)
-  confermaOspite(selectedData);
+  // Durata unica per popup + sparizione lista
+  const durata = 300;
 
-  if (selectedRow) {
-    selectedRow.classList.remove('selected');
-    selectedRow.classList.add('confirmed');
-    selectedRow.style.pointerEvents = 'none';
+  try{
+    const res = await fetch(sheetURL, {
+      method: 'POST',
+      body: JSON.stringify(dati)
+    });
+
+    if (!res.ok) {
+      popupConfirm.style.display = 'none';
+      alert("Errore dal server (" + res.status + ")");
+      return;
+    }
+
+    // ⏱ RESET INTERFACCIA E FINE POPUP → tutto sincronizzato qui
+    setTimeout(() => {
+
+        // 🔥 RESET INTERFACCIA
+        searchBox.value = "";
+        listVisible = false;
+        selectedRow = null;
+        selectedData = null;
+        selectedKey = null;
+        confirmCard.classList.add('hidden');
+
+        // 🔥 Nasconde la lista
+        renderTable();
+
+        // 🔥 Nasconde il popup nello stesso identico momento
+        popupConfirm.style.display = 'none';
+
+        // 🔄 Ricarica dati e contatori
+        caricaLista();
+
+    }, durata);
+
+  }catch(err){
+    popupConfirm.style.display = 'none';
+    alert("Errore di rete o connessione.");
   }
+}
 
-  // pulisco la selezione salvata
-  selectedRow = null;
-  selectedData = null;
-  selectedKey  = null;
 
-  confirmCard.classList.add('hidden');
-  listVisible = false;
-  searchBox.value = "";
-
-  popupConfirm.style.display = "block";
-  setTimeout(()=>popupConfirm.style.display = "none", 2000);
-
-  // ricarico la lista dopo 1 secondo
-  setTimeout(caricaLista, 1000);
+/* ===== CONFERMA OSPITE GIÀ IN LISTA (CLICK SU CONFERMA) ===== */
+confirmBtn.addEventListener('click', async ()=>{
+  if(!selectedData) return;
+  await confermaOspite(selectedData);
 });
 
-showListBtn.addEventListener('click', ()=>{
-  listVisible=!listVisible;
-  if(listVisible) searchBox.value="";
+/* ===== CAMBIO TESTO NELLA RICERCA ===== */
+searchBox.addEventListener('input', () => {
   renderTable();
 });
 
-reportBtn.addEventListener('click', ()=>{
-  const ws=XLSX.utils.json_to_sheet(rawRows);
-  const wb=XLSX.utils.book_new();
+/* ===== MOSTRA / NASCONDI LISTA COMPLETA ===== */
+showListBtn.addEventListener('click', () => {
+  listVisible = !listVisible;
+  if(listVisible) searchBox.value = "";
+  renderTable();
+});
+
+/* ===== REPORT EXCEL COMPLETO ===== */
+reportBtn.addEventListener('click', () => {
+  const ws = XLSX.utils.json_to_sheet(rawRows);
+  const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Report');
   XLSX.writeFile(wb,'report_completo.xlsx');
 });
 
-/* ===== RESET CON PASSWORD (2006) ===== */
-resetBtn.addEventListener('click',()=>{
-  modal.classList.add('show'); passwordInput.value="";
-});
-modalCancel.addEventListener('click',()=>{modal.classList.remove('show');});
-document.querySelectorAll('.keypad button').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    let val=btn.textContent;
-    if(val==='←'){passwordInput.value=passwordInput.value.slice(0,-1);}
-    else if(val==='OK'){modalConfirm.click();}
-    else{passwordInput.value+=val;}
-  });
-});
-modalConfirm.addEventListener('click',()=>{
-  if(passwordInput.value==="2006"){ modal.classList.remove('show'); location.reload(true);}
-  else{alert("Password errata");}
+/* ===== NUOVO OSPITE DA CAMPO DI RICERCA ===== */
+async function aggiungiNuovoOspiteDaSearch(){
+  const nome = (searchBox.value || "").trim();
+
+  if(!nome){
+    alert("Scrivi nome e cognome dell'ospite nel campo di ricerca");
+    searchBox.focus();
+    return;
+  }
+
+  const datiNuovo = {
+    azione: "aggiungi",
+    nome: nome,
+    azienda: "",
+    posto: "",
+    confermato: "SI"
+  };
+
+  await confermaOspite(datiNuovo);
+
+  searchBox.value = "";
+  await caricaLista();
+
+  alert("Ospite registrato e accreditato.");
+}
+
+/* ===== CLICK SU "REGISTRA NUOVO OSPITE" ===== */
+registerNewBtn.addEventListener('click', async ()=>{
+  registerNewBtn.disabled = true;
+  const oldText = registerNewBtn.textContent;
+  registerNewBtn.textContent = "Registrazione in corso...";
+
+  try{
+    await aggiungiNuovoOspiteDaSearch();
+  }catch(err){
+    console.error("Errore registrazione nuovo ospite:", err);
+    alert("Si è verificato un errore nella registrazione. Riprova.");
+  }finally{
+    registerNewBtn.disabled = false;
+    registerNewBtn.textContent = oldText;
+  }
 });
 
 /* ===== AVVIO ===== */
 caricaLista();
-setInterval(caricaLista,5000); // aggiorna ogni 5s
-</script>
+setInterval(caricaLista, 5000); // aggiorna ogni 5s
+  </script>
 </body>
 </html>
