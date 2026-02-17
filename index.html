@@ -35,6 +35,7 @@
     padding:15px;
     margin-bottom:15px
   }
+
   #searchBox{
     padding:12px;
     border-radius:8px;
@@ -107,15 +108,31 @@
     to{transform:translateX(-50%) scale(1);opacity:1}
   }
   .actionsBottom{
-    text-align:center;
-    margin-top:30px
-  }
-  .actionsBottom button{
-    min-width:140px;
-    margin:8px;
-    font-size:16px;
-    color:#fff
-  }
+  position: sticky;   /* ✅ resta in posizione quando scrolli la tabella */
+  top: 10px;          /* distanza dall’alto SOLO quando arriva in cima */
+  z-index: 20;
+
+  display: flex;      /* ✅ pulsanti in orizzontale */
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;    /* se schermo stretto vanno a capo in modo pulito */
+
+  margin: 10px 0 15px 0;
+  padding: 10px;
+
+  background: #1f2937;     /* coerente con le card */
+  border-radius: 12px;
+  border: 1px solid #374151;
+}
+
+.actionsBottom button{
+  min-width: 160px;
+  margin: 0;
+  color: #ffffff;     /* testo bianco */
+}
+
+
   #showListBtn{background:#2563eb}
   #reportBtn{background:#d97706}
   #registerNewBtn{background:#16a34a}
@@ -131,6 +148,11 @@
     <input type="text" id="searchBox" placeholder="Cerca ospite" autofocus>
     <div class="counter"><span id="countChecked">0</span> / <span id="countTotal">0</span></div>
   </div>
+  <div class="actionsBottom hidden" id="exportCard">
+  <button id="showListBtn">Mostra/Nascondi</button>
+  <button id="reportBtn">Report</button>
+  <button id="registerNewBtn">Registra nuovo ospite</button>
+</div>
 
   <div class="card hidden" id="tableCard">
     <table id="dataTable">
@@ -141,12 +163,6 @@
 
   <div class="card hidden" id="confirmCard">
     <button id="confirmBtn" class="ok" style="width:100%;">CONFERMA</button>
-  </div>
-
-  <div class="actionsBottom hidden" id="exportCard">
-    <button id="showListBtn">Mostra/Nascondi</button>
-    <button id="reportBtn">Report</button>
-    <button id="registerNewBtn">Registra nuovo ospite</button>
   </div>
 
   <div class="popupConfirm" id="popupConfirm">Ospite Accreditato</div>
