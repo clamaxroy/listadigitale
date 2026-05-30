@@ -2,163 +2,92 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <title>Checkfast Lista Digitale</title>
+  <link rel="manifest" href="manifest.json">
+  <title>CheckFast – Lista Digitale</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="robots" content="noindex, nofollow">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-  .logoBox{
-    width:100%;
-    text-align:center;
-    margin-bottom:15px;
-  }
-  .logoImg{
-    max-width:150px;
-    height:auto;
-    filter:brightness(1);
-  }
-
-  body{
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:#2b384b;
-    color:#fff;
-    margin:0;
-    padding:15px
-  }
-  h1{
-    text-align:center;
-    font-size:22px;
-    margin-bottom:20px
-  }
-  .card{
-    background:#1f2937;
-    border-radius:10px;
-    padding:15px;
-    margin-bottom:15px
-  }
-
-  #searchBox{
-    padding:12px;
-    border-radius:8px;
-    border:none;
-    width:70%;
-    margin:6px auto;
-    display:block;
-    font-size:18px
-  }
-  table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:10px
-  }
-  th,td{
-    padding:10px;
-    border-bottom:1px solid #374151;
-    font-size:16px
-  }
-  th{
-    background:#111827;
-    position:sticky;
-    top:0;
-    z-index:2;
-    text-align:left
-  }
-  tr:nth-child(even){background:#111827}
-  tr:nth-child(odd){background:#020617}
-  tr.confirmed{
-    background:#4CAF50!important;
-    color:#fff
-  }
-  tr.selected{
-    background:#2563eb!important;
-    color:#fff
-  }
-  button{
-    padding:12px 14px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    margin:6px;
-    font-size:16px
-  }
-  button.primary{background:#e52013;color:#fff}
-  button.ok{background:#16a34a;color:#fff}
-  .counter{
-    margin-top:10px;
-    font-size:20px;
-    text-align:center
-  }
-  .hidden{display:none}
-  .popupConfirm{
-    position:fixed;
-    top:15%;
-    left:50%;
-    transform:translateX(-50%);
-    background:#16a34a;
-    color:#fff;
-    padding:20px 60px;
-    border-radius:999px;
-    font-size:25px;
-    display:none;
-    z-index:999;
-    box-shadow:0 6px 20px rgba(0,0,0,0.6);
-    animation:pop .3s ease-out
-  }
-  @keyframes pop{
-    from{transform:translateX(-50%) scale(.9);opacity:0}
-    to{transform:translateX(-50%) scale(1);opacity:1}
-  }
-  .actionsBottom{
-  position: sticky;   /* ✅ resta in posizione quando scrolli la tabella */
-  top: 10px;          /* distanza dall’alto SOLO quando arriva in cima */
-  z-index: 20;
-
-  display: flex;      /* ✅ pulsanti in orizzontale */
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;    /* se schermo stretto vanno a capo in modo pulito */
-
-  margin: 10px 0 15px 0;
-  padding: 10px;
-
-  background: #1f2937;     /* coerente con le card */
-  border-radius: 12px;
-  border: 1px solid #374151;
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#2b384b;color:#fff;margin:0;padding:15px}
+    h1{text-align:center;font-size:22px;margin-bottom:20px}
+    .card{background:#1f2937;border-radius:10px;padding:15px;margin-bottom:15px}
+    #searchBox{padding:12px;border-radius:8px;border:none;width:70%;margin:6px auto;display:block;font-size:18px}
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:18px}
+    th,td{padding:14px;border-bottom:1px solid #444}
+    th{background:#374151;text-align:left}
+    tr{cursor:pointer}
+    tr:hover{background:#4b5563}
+    tr.confirmed{
+  background:#4CAF50!important;  /* verde del tuo esempio */
+  color:#fff;
+}
+    tr.selected{background:#2563eb!important;color:#fff}
+    button{padding:12px 14px;border:none;border-radius:8px;cursor:pointer;margin:6px;font-size:16px}
+    button.primary{background:#e52013;color:#fff}
+    button.ok{background:#16a34a;color:#fff}
+    .counter{margin-top:10px;font-size:20px;text-align:center}
+    .hidden{display:none}
+    .popupConfirm{position:fixed;top:15%;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:30px 40px;border-radius:12px;font-size:26px;font-weight:bold;display:none;z-index:99999;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.6);animation:pop .3s ease-out}
+    @keyframes pop{from{transform:translateX(-50%) scale(.9);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+    .actionsBottom{text-align:center;margin-top:20px}
+    .actionsBottom button{
+  min-width:140px;
+  margin:6px;
+  font-size:15px;
+  padding:6px 8px;   /* <-- riduce l’altezza */
+  border-radius:6px;  /* <-- più compatti e moderni */
+  color:#fff;
+}
+    #showListBtn{background:#2563eb}
+    #reportBtn{background:#d97706}
+    #registerNewBtn{background:#16a34a}
+    #resetBtn{background:#dc2626}
+    .logoBox{
+  width:100%;
+  text-align:center;
+  margin-bottom:15px;
 }
 
-.actionsBottom button{
-  min-width: 100px;      /* prima 160 → metà */
-  padding: 8px 10px;     /* prima circa 12x14 → metà */
-  font-size: 13px;      /* prima 16px → più piccolo */
-  margin: 0;
-  color: #ffffff;
-  border-radius: 8px;   /* leggermente più compatto */
+.logoImg{
+  max-width:150px;       /* dimensione logo */
+  height:auto;
+  filter:brightness(1);  /* puoi anche schiarirlo/scurirlo */
 }
 
-
-  #showListBtn{background:#2563eb}
-  #reportBtn{background:#d97706}
-  #registerNewBtn{background:#16a34a}
+    /* Modal password */
+    .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;visibility:hidden;opacity:0;transition:opacity .3s;}
+    .modal.show{visibility:visible;opacity:1;}
+    .modal-content{background:#1f2937;padding:20px;border-radius:12px;text-align:center;width:300px;}
+    .modal h2{margin:0 0 15px;font-size:20px}
+    .modal input{width:100%;font-size:22px;padding:12px;border-radius:8px;border:none;text-align:center;margin-bottom:15px;background:#fff;color:#000;}
+    .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:15px}
+    .keypad button{font-size:22px;padding:15px;border-radius:8px;background:#374151;color:#fff}
+    .modal .actions{display:flex;justify-content:space-between}
+    .modal button.action{width:48%;font-size:18px}
   </style>
 </head>
 <body>
   <div class="logoBox">
-    <img src="https://static.wixstatic.com/media/2080b2_091288fac9ef49fb875e82a42f827415~mv2.png" alt="Logo" class="logoImg">
-  </div>
-  <h1>LAVAZZA | TRIENNALE MILANO 5 GIUGNO</h1>
-  
-  <div class="card hidden" id="toolsCard">
-    <input type="text" id="searchBox" placeholder="Cerca ospite" autofocus>
-    <div class="counter"><span id="countChecked">0</span> / <span id="countTotal">0</span></div>
-  </div>
-  <div class="actionsBottom hidden" id="exportCard">
-  <button id="showListBtn">Mostra/Nascondi</button>
-  <button id="reportBtn">Report</button>
-  <button id="registerNewBtn">Registra nuovo ospite</button>
+  <img src="https://static.wixstatic.com/media/2080b2_091288fac9ef49fb875e82a42f827415~mv2.png" alt="Logo" class="logoImg">
 </div>
+
+  <h1>LAVAZZA | TRIENNALE MILANO 5 GIUGNO</h1>
+
+  <div class="card hidden" id="toolsCard">
+    <input type="text" id="searchBox" placeholder="Cerca ospite…" autofocus>
+    <div class="counter">
+      <span id="countChecked">0</span> / <span id="countTotal">0</span>
+    </div>
+    <div class="actionsBottom" id="exportCard">
+      <button id="showListBtn">Mostra/Nascondi</button>
+      <button id="reportBtn">Report</button>
+      <button id="registerNewBtn">Registra nuovo ospite</button>
+    </div>
+  </div>
 
   <div class="card hidden" id="tableCard">
     <table id="dataTable">
+      <!-- adattato a Nominativo / Colore / Invitato -->
       <thead><tr><th>Ospite</th><th>Azienda</th><th>Note</th></tr></thead>
       <tbody id="tbody"></tbody>
     </table>
@@ -170,107 +99,101 @@
 
   <div class="popupConfirm" id="popupConfirm">Ospite Accreditato</div>
 
-  <script>
-/* ===== URL WEB APP GOOGLE APPS SCRIPT ===== */
-const sheetURL = "https://script.google.com/macros/s/AKfycbzE92_7B0PDEJIxwGodl4M03r9jybsmS-gijtrr3mamDPd3m10XpBf_CuWgsHn8d5Gg/exec";
+
+<script>
+/* ===== CONFIG GOOGLE SHEET / WEB APP (account agenziawithyou@gmail.com) ===== */
+const sheetURL = "https://script.google.com/macros/s/AKfycbwsAe7lZZY6CfWXitxybapI-mm66ot2gOH_DucpbtpKxEjUINgTAqFK1QUcArZGr5IG-g/exec";
 
 /* ===== VARIABILI ===== */
-let rawRows = [];
-let selectedRow = null;
-let selectedData = null;
-let listVisible = false;
-let selectedKey = null;
+let rawRows=[], selectedRow=null, selectedData=null;
+let listVisible=false;
+let selectedKey = null;  // memorizza la riga selezionata (nominativo+colore)
 
-const searchBox   = document.getElementById('searchBox');
-const tbody       = document.getElementById('tbody');
-const toolsCard   = document.getElementById('toolsCard');
-const tableCard   = document.getElementById('tableCard');
-const confirmCard = document.getElementById('confirmCard');
-const confirmBtn  = document.getElementById('confirmBtn');
-const countChecked= document.getElementById('countChecked');
-const countTotal  = document.getElementById('countTotal');
-const popupConfirm= document.getElementById('popupConfirm');
-const exportCard  = document.getElementById('exportCard');
-const showListBtn = document.getElementById('showListBtn');
-const reportBtn   = document.getElementById('reportBtn');
-const registerNewBtn = document.getElementById('registerNewBtn');
+const searchBox=document.getElementById('searchBox');
+const tbody=document.getElementById('tbody');
+const toolsCard=document.getElementById('toolsCard');
+const tableCard=document.getElementById('tableCard');
+const confirmCard=document.getElementById('confirmCard');
+const confirmBtn=document.getElementById('confirmBtn');
+const countChecked=document.getElementById('countChecked');
+const countTotal=document.getElementById('countTotal');
+const popupConfirm=document.getElementById('popupConfirm');
+const exportCard=document.getElementById('exportCard');
+const showListBtn=document.getElementById('showListBtn');
+const reportBtn=document.getElementById('reportBtn');
+const registerNewBtn=document.getElementById('registerNewBtn');
+const modal=document.getElementById('passwordModal');
+const passwordInput=document.getElementById('passwordInput');
+const modalConfirm=document.getElementById('modalConfirm');
+const modalCancel=document.getElementById('modalCancel');
 
-/* ===== CARICA LISTA DA SHEET (GET) ===== */
+/* ===== FUNZIONI ===== */
 async function caricaLista(){
   try{
-    const res = await fetch(sheetURL);
-    const data = await res.json();
+    // usa l'azione "list" del backend Apps Script
+    let res = await fetch(sheetURL + "?action=list");
+    let data = await res.json();
     rawRows = data;
     renderTable();
     toolsCard.classList.remove('hidden');
-    exportCard.classList.remove('hidden');
-  }catch(err){
-    console.error("Errore caricamento:", err);
-  }
+    // exportCard sempre visibile dentro toolsCard
+  }catch(err){console.error("Errore caricamento:",err);}
 }
 
-/* ===== CONTATORI (totale / confermati) ===== */
-function aggiornaContatori(){
-  const total = rawRows.length;
-
-  // Considero "confermato" qualsiasi valore NON vuoto nella colonna Confermato
-  const checked = rawRows.filter(r => {
-    const v = (r.confermato || "").toString().trim();
-    return v !== "";
-  }).length;
-
-  countTotal.textContent = total;
-  countChecked.textContent = checked;
+async function confermaOspite(dati){
+  try{
+    // chiama doPost con action="ingresso", nominativo, colore
+    await fetch(sheetURL,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({
+        action: "ingresso",
+        nominativo: dati.nominativo,
+        colore: dati.colore || ""
+      })
+    });
+  }catch(err){console.error("Errore POST:",err);}
 }
 
-/* ===== RENDER TABELLA ===== */
 function renderTable(){
-  tbody.innerHTML = "";
-  confirmCard.classList.add('hidden');
-  selectedRow = null;
-  selectedData = null;
+  tbody.innerHTML='';
+  const qRaw = searchBox.value || '';
+  const q = qRaw.toLowerCase();
+  const showAllBySpace = (qRaw === ' ');
 
-  let q = searchBox.value.trim().toLowerCase();
-  let rows = rawRows;
-
-  // se lista non visibile e ricerca vuota → non mostra nulla
-  if(!listVisible && q === ""){
-    tableCard.classList.add('hidden');
-    aggiornaContatori();
-    return;
-  }
-
-  // filtro se c'è testo nel campo
-  if(q !== ""){
-    rows = rawRows.filter(r=>{
-      return String(r.nome ?? '').toLowerCase().includes(q) ||
-             String(r.azienda ?? '').toLowerCase().includes(q) ||
-             String(r.posto ?? '').toLowerCase().includes(q);
+  let rows=[];
+  if(listVisible || showAllBySpace){
+    rows=rawRows;
+  } else if(q.trim().length>0){
+    rows=rawRows.filter(r=>{
+      return String(r.nominativo??'').toLowerCase().includes(q) ||
+             String(r.colore??'').toLowerCase().includes(q) ||
+             String(r.invitato??'').toLowerCase().includes(q);
     });
   }
 
-  if(rows.length > 0){
-    tableCard.classList.remove('hidden');
-  } else {
-    tableCard.classList.add('hidden');
-  }
+  if(rows.length>0){tableCard.classList.remove('hidden');}
+  else{tableCard.classList.add('hidden');}
 
   rows.forEach(r=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.nome || ''}</td><td>${r.azienda || ''}</td><td>${r.posto || ''}</td>`;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.nominativo || ''}</td><td>${r.colore||''}</td><td>${r.invitato||''}</td>`;
 
-    const giaConfermato = !!(r.confermato && String(r.confermato).trim() !== "");
-    if(giaConfermato){
+    // consideriamo "confermato" se ingresso NON è vuoto
+    const giàConfermato = r.ingresso && String(r.ingresso).trim() !== "";
+    if(giàConfermato){
       tr.classList.add('confirmed');
-      tr.style.pointerEvents = 'none';
+      tr.style.pointerEvents='none';
     }
 
-    const key = (r.nome || '') + '|' + (r.azienda || '') + '|' + (r.posto || '');
+    // chiave univoca per questa riga (serve a ricordare la selezione)
+    const key = (r.nominativo || '') + '|' + (r.colore || '');
 
+    // click sulla riga
     tr.addEventListener('click', () => {
-      if (giaConfermato) return;
+      if (giàConfermato) return;
 
-      // toggle selezione
+      // se è già selezionata → la deseleziono (toggle)
       if (tr.classList.contains('selected')) {
         tr.classList.remove('selected');
         selectedRow = null;
@@ -280,10 +203,10 @@ function renderTable(){
         return;
       }
 
-      if (selectedRow) {
-        selectedRow.classList.remove('selected');
-      }
+      // altrimenti tolgo la selezione da tutte le altre righe
+      [...tbody.children].forEach(row => row.classList.remove('selected'));
 
+      // seleziono questa
       tr.classList.add('selected');
       selectedRow = tr;
       selectedData = r;
@@ -291,7 +214,8 @@ function renderTable(){
       confirmCard.classList.remove('hidden');
     });
 
-    if (selectedKey && key === selectedKey) {
+    // SE dopo un refresh questa è la riga selezionata → riselezionala
+    if (!giàConfermato && selectedKey === key) {
       tr.classList.add('selected');
       selectedRow = tr;
       selectedData = r;
@@ -301,88 +225,53 @@ function renderTable(){
     tbody.appendChild(tr);
   });
 
-  aggiornaContatori();
+  // conteggio ingressi confermati
+  let c=rawRows.filter(r => r.ingresso && String(r.ingresso).trim() !== "").length;
+  countChecked.textContent=c; 
+  countTotal.textContent=rawRows.length;
 }
 
-/* ===== INVIO DATI A APPS SCRIPT (POST) ===== */
-/* ===== INVIO DATI A APPS SCRIPT (POST) ===== */
-/* ===== INVIO DATI A APPS SCRIPT (POST) ===== */
-/* ===== INVIO DATI A APPS SCRIPT (POST) ===== */
-async function confermaOspite(dati){
+searchBox.addEventListener('input', renderTable);
 
-  // Mostro subito il popup
-  popupConfirm.textContent = "Ospite accreditato";
-  popupConfirm.style.display = 'block';
-
-  // Durata unica per popup + sparizione lista
-  const durata = 300;
-
-  try{
-    const res = await fetch(sheetURL, {
-      method: 'POST',
-      body: JSON.stringify(dati)
-    });
-
-    if (!res.ok) {
-      popupConfirm.style.display = 'none';
-      alert("Errore dal server (" + res.status + ")");
-      return;
-    }
-
-    // ⏱ RESET INTERFACCIA E FINE POPUP → tutto sincronizzato qui
-    setTimeout(() => {
-
-        // 🔥 RESET INTERFACCIA
-        searchBox.value = "";
-        listVisible = false;
-        selectedRow = null;
-        selectedData = null;
-        selectedKey = null;
-        confirmCard.classList.add('hidden');
-
-        // 🔥 Nasconde la lista
-        renderTable();
-
-        // 🔥 Nasconde il popup nello stesso identico momento
-        popupConfirm.style.display = 'none';
-
-        // 🔄 Ricarica dati e contatori
-        caricaLista();
-
-    }, durata);
-
-  }catch(err){
-    popupConfirm.style.display = 'none';
-    alert("Errore di rete o connessione.");
-  }
-}
-
-
-/* ===== CONFERMA OSPITE GIÀ IN LISTA (CLICK SU CONFERMA) ===== */
-confirmBtn.addEventListener('click', async ()=>{
+confirmBtn.addEventListener('click', ()=>{
   if(!selectedData) return;
-  await confermaOspite(selectedData);
+  confermaOspite(selectedData);
+
+  if(selectedRow) {
+    selectedRow.classList.remove('selected');
+    selectedRow.classList.add('confirmed');
+    selectedRow.style.pointerEvents='none';
+  }
+
+  // pulisco la selezione salvata
+  selectedRow = null;
+  selectedData = null;
+  selectedKey = null;
+
+  confirmCard.classList.add('hidden');
+  listVisible=false; 
+  searchBox.value=""; 
+
+  popupConfirm.style.display="block";
+  setTimeout(()=>popupConfirm.style.display="none",2000);
+
+  // ricarico la lista dopo 1 secondo
+  setTimeout(caricaLista,1000);
 });
 
-/* ===== CAMBIO TESTO NELLA RICERCA ===== */
-searchBox.addEventListener('input', () => {
+showListBtn.addEventListener('click', ()=>{
+  listVisible=!listVisible;
+  if(listVisible) searchBox.value="";
   renderTable();
 });
 
-/* ===== MOSTRA / NASCONDI LISTA COMPLETA ===== */
-showListBtn.addEventListener('click', () => {
-  listVisible = !listVisible;
-  if(listVisible) searchBox.value = "";
-  renderTable();
-});
-
-/* ===== REPORT EXCEL COMPLETO ===== */
-reportBtn.addEventListener('click', () => {
-  const ws = XLSX.utils.json_to_sheet(rawRows);
-  const wb = XLSX.utils.book_new();
+reportBtn.addEventListener('click', ()=>{
+  const ws=XLSX.utils.json_to_sheet(rawRows);
+  const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Report');
   XLSX.writeFile(wb,'report_completo.xlsx');
 });
+
 
 /* ===== NUOVO OSPITE DA CAMPO DI RICERCA ===== */
 async function aggiungiNuovoOspiteDaSearch(){
@@ -394,20 +283,46 @@ async function aggiungiNuovoOspiteDaSearch(){
     return;
   }
 
-  const datiNuovo = {
-    azione: "aggiungi",
-    nome: nome,
-    azienda: "",
-    posto: "",
-    confermato: "SI"
-  };
+  try{
+    popupConfirm.textContent = "Nuovo ospite registrato";
+    popupConfirm.style.display = "block";
 
-  await confermaOspite(datiNuovo);
+    await fetch(sheetURL,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({
+        action: "aggiungi",
+        azione: "aggiungi",
 
-  searchBox.value = "";
-  await caricaLista();
+        // Campi usati da questa prima versione
+        nominativo: nome,
+        colore: "",
+        invitato: "",
+        ingresso: "SI",
 
-  alert("Ospite registrato e accreditato.");
+        // Campi mantenuti anche per compatibilità con la seconda versione
+        nome: nome,
+        azienda: "",
+        posto: "",
+        confermato: "SI"
+      })
+    });
+
+    searchBox.value = "";
+    listVisible = false;
+    selectedRow = null;
+    selectedData = null;
+    selectedKey = null;
+    confirmCard.classList.add('hidden');
+
+    setTimeout(()=>popupConfirm.style.display="none",2000);
+    setTimeout(caricaLista,1000);
+
+  }catch(err){
+    popupConfirm.style.display = "none";
+    console.error("Errore registrazione nuovo ospite:", err);
+    alert("Si è verificato un errore nella registrazione. Riprova.");
+  }
 }
 
 /* ===== CLICK SU "REGISTRA NUOVO OSPITE" ===== */
@@ -418,18 +333,16 @@ registerNewBtn.addEventListener('click', async ()=>{
 
   try{
     await aggiungiNuovoOspiteDaSearch();
-  }catch(err){
-    console.error("Errore registrazione nuovo ospite:", err);
-    alert("Si è verificato un errore nella registrazione. Riprova.");
   }finally{
     registerNewBtn.disabled = false;
     registerNewBtn.textContent = oldText;
   }
 });
 
+
 /* ===== AVVIO ===== */
 caricaLista();
-setInterval(caricaLista, 5000); // aggiorna ogni 5s
-  </script>
+setInterval(caricaLista,5000); // aggiorna ogni 5s
+</script>
 </body>
 </html>
